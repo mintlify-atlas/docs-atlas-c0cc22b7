@@ -1,0 +1,165 @@
+{
+  "projectType": "saas",
+  "projectName": "Openlane UI",
+  "projectDescription": "A compliance and GRC platform UI with Next.js console and Storybook component library",
+  "theme": "linden",
+  "primaryColor": "#2563eb",
+  "lightColor": "#3b82f6",
+  "darkColor": "#1e40af",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Console",
+            "pages": [
+              "console/overview",
+              "console/authentication",
+              "console/dashboard",
+              "console/organizations",
+              "console/compliance-features",
+              "console/deployment"
+            ]
+          },
+          {
+            "group": "Component Library",
+            "pages": [
+              "components/overview",
+              "components/installation",
+              "components/usage",
+              "components/theming",
+              "components/storybook"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "architecture/monorepo",
+              "architecture/packages",
+              "architecture/tech-stack"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "development/setup",
+              "development/running-locally",
+              "development/building",
+              "development/contributing"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Components",
+        "groups": [
+          {
+            "group": "Core Components",
+            "pages": [
+              "components-api/button",
+              "components-api/input",
+              "components-api/form",
+              "components-api/dialog",
+              "components-api/table"
+            ]
+          },
+          {
+            "group": "Layout Components",
+            "pages": [
+              "components-api/card",
+              "components-api/panel",
+              "components-api/tabs",
+              "components-api/grid"
+            ]
+          },
+          {
+            "group": "Data Display",
+            "pages": [
+              "components-api/data-table",
+              "components-api/charts",
+              "components-api/badge",
+              "components-api/avatar"
+            ]
+          },
+          {
+            "group": "Navigation",
+            "pages": [
+              "components-api/breadcrumb",
+              "components-api/pagination",
+              "components-api/dropdown-menu"
+            ]
+          },
+          {
+            "group": "Feedback",
+            "pages": [
+              "components-api/alert",
+              "components-api/toast",
+              "components-api/progress"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API",
+        "groups": [
+          {
+            "group": "Packages",
+            "pages": [
+              "api/codegen",
+              "api/ui",
+              "api/dally"
+            ]
+          },
+          {
+            "group": "GraphQL",
+            "pages": [
+              "api/graphql-overview",
+              "api/graphql-codegen",
+              "api/graphql-queries",
+              "api/graphql-mutations"
+            ]
+          },
+          {
+            "group": "Utilities",
+            "pages": [
+              "api/utils",
+              "api/hooks",
+              "api/types"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Next.js-based compliance console with SOC2, ISO27001, NIST support",
+    "Comprehensive UI component library with 60+ components",
+    "GraphQL code generation for type-safe API interactions",
+    "Storybook component documentation and development",
+    "Turborepo monorepo architecture with Bun runtime",
+    "Authentication with SSO, 2FA, and WebAuthn support",
+    "Compliance features: controls, policies, procedures, risks, evidence",
+    "AI-powered suggestions using Google Vertex AI",
+    "Organization and user management",
+    "Trust center and exposure management"
+  ],
+  "publicApiSurface": [
+    "@repo/ui - UI component library",
+    "@repo/codegen - GraphQL code generation",
+    "@repo/dally - DAL library for common patterns",
+    "@repo/tailwind-config - Tailwind configuration",
+    "@repo/config-typescript - TypeScript configuration",
+    "@repo/eslint-config - ESLint configuration",
+    "console - Openlane compliance console application",
+    "storybook - Component documentation and showcase"
+  ]
+}
