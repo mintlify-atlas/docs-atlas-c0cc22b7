@@ -1,0 +1,321 @@
+---
+title: DropdownMenu
+description: Displays a menu to the user — such as a set of actions or functions — triggered by a button.
+---
+
+## Overview
+
+The DropdownMenu component is built on top of Radix UI's DropdownMenu primitive and provides a comprehensive set of components for creating accessible dropdown menus with various item types, separators, and sub-menus.
+
+## Components
+
+### DropdownMenu
+
+The root component that manages the open/close state of the dropdown menu.
+
+Inherits all props from `@radix-ui/react-dropdown-menu` Root component.
+
+### DropdownMenuTrigger
+
+The button or element that triggers the dropdown menu.
+
+<ParamField path="asChild" type="boolean" optional>
+  When true, merges props with the child element instead of rendering a button.
+</ParamField>
+
+Inherits all props from `@radix-ui/react-dropdown-menu` Trigger component.
+
+### DropdownMenuContent
+
+The container for dropdown menu items.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the content container.
+</ParamField>
+
+<ParamField path="sideOffset" type="number" optional default="4">
+  The distance in pixels from the trigger.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.Content>>" optional>
+  Ref forwarded to the underlying content element.
+</ParamField>
+
+Inherits all props from `@radix-ui/react-dropdown-menu` Content component.
+
+### DropdownMenuItem
+
+A clickable item within the dropdown menu.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the item.
+</ParamField>
+
+<ParamField path="inset" type="boolean" optional>
+  When true, adds left padding to align with labeled items.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.Item>>" optional>
+  Ref forwarded to the underlying item element.
+</ParamField>
+
+Inherits all props from `@radix-ui/react-dropdown-menu` Item component.
+
+### DropdownMenuCheckboxItem
+
+A menu item with a checkbox indicator.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the checkbox item.
+</ParamField>
+
+<ParamField path="checked" type="boolean | 'indeterminate'" optional>
+  The checked state of the checkbox.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>>" optional>
+  Ref forwarded to the underlying checkbox item element.
+</ParamField>
+
+Inherits all props from `@radix-ui/react-dropdown-menu` CheckboxItem component.
+
+### DropdownMenuRadioItem
+
+A menu item with a radio button indicator. Must be used within a DropdownMenuRadioGroup.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the radio item.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>>" optional>
+  Ref forwarded to the underlying radio item element.
+</ParamField>
+
+Inherits all props from `@radix-ui/react-dropdown-menu` RadioItem component.
+
+### DropdownMenuLabel
+
+A label for a group of menu items.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the label.
+</ParamField>
+
+<ParamField path="inset" type="boolean" optional>
+  When true, adds left padding to align with other items.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.Label>>" optional>
+  Ref forwarded to the underlying label element.
+</ParamField>
+
+Inherits all props from `@radix-ui/react-dropdown-menu` Label component.
+
+### DropdownMenuSeparator
+
+A visual separator between menu items.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the separator.
+</ParamField>
+
+<ParamField path="spacing" type="'md' | 'lg'" optional>
+  Controls the vertical spacing around the separator.
+  - `md`: 1rem (16px) margin
+  - `lg`: 2rem (32px) margin
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.Separator>>" optional>
+  Ref forwarded to the underlying separator element.
+</ParamField>
+
+Inherits all props from `@radix-ui/react-dropdown-menu` Separator component.
+
+### DropdownMenuShortcut
+
+Displays a keyboard shortcut hint aligned to the right of a menu item.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the shortcut text.
+</ParamField>
+
+Inherits all props from `React.HTMLAttributes<HTMLSpanElement>`.
+
+### DropdownMenuGroup
+
+Groups related menu items together.
+
+Inherits all props from `@radix-ui/react-dropdown-menu` Group component.
+
+### DropdownMenuSub
+
+The root component for a submenu.
+
+Inherits all props from `@radix-ui/react-dropdown-menu` Sub component.
+
+### DropdownMenuSubTrigger
+
+The trigger for opening a submenu.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the sub-trigger.
+</ParamField>
+
+<ParamField path="inset" type="boolean" optional>
+  When true, adds left padding to align with other items.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>>" optional>
+  Ref forwarded to the underlying sub-trigger element.
+</ParamField>
+
+Inherits all props from `@radix-ui/react-dropdown-menu` SubTrigger component.
+
+### DropdownMenuSubContent
+
+The container for submenu items.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the sub-content.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.SubContent>>" optional>
+  Ref forwarded to the underlying sub-content element.
+</ParamField>
+
+Inherits all props from `@radix-ui/react-dropdown-menu` SubContent component.
+
+### DropdownMenuPortal
+
+Portals the dropdown menu content to a different part of the DOM.
+
+Inherits all props from `@radix-ui/react-dropdown-menu` Portal component.
+
+### DropdownMenuRadioGroup
+
+Groups radio items together to ensure only one can be selected at a time.
+
+Inherits all props from `@radix-ui/react-dropdown-menu` RadioGroup component.
+
+## Usage
+
+### Basic Menu
+
+```tsx
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@repo/ui/dropdown-menu'
+import { Button } from '@repo/ui/button'
+
+function MyDropdown() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="filled" size="md">
+          Open Menu
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuSeparator spacing="md" />
+        <DropdownMenuItem>Profile</DropdownMenuItem>
+        <DropdownMenuItem>Settings</DropdownMenuItem>
+        <DropdownMenuSeparator spacing="md" />
+        <DropdownMenuItem>Log out</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+```
+
+### With Keyboard Shortcuts
+
+```tsx
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from '@repo/ui/dropdown-menu'
+import { Button } from '@repo/ui/button'
+
+function MenuWithShortcuts() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="filled">Actions</Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem>
+          Profile
+          <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          Settings
+          <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+```
+
+### With Submenu
+
+```tsx
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@repo/ui/dropdown-menu'
+import { Button } from '@repo/ui/button'
+
+function MenuWithSubmenu() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="filled">Options</Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem>Team</DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>Invite users</DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem>Email</DropdownMenuItem>
+              <DropdownMenuItem>Message</DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+```
+
+## Accessibility
+
+The DropdownMenu component is built on Radix UI primitives and includes comprehensive accessibility features:
+
+- Full keyboard navigation support
+- Focus management
+- Screen reader announcements
+- ARIA attributes for proper semantics
+- Support for disabled items
+
+## Source
+
+Implementation: `/home/daytona/workspace/source/packages/ui/src/dropdown-menu/dropdown-menu.tsx`
+
+Styles: `/home/daytona/workspace/source/packages/ui/src/dropdown-menu/dropdown-menu.styles.tsx`

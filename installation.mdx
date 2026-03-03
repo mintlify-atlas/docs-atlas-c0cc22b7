@@ -1,0 +1,696 @@
+---
+title: 'Installation Guide'
+description: 'Detailed installation instructions for both the Openlane Console and Component Library'
+icon: 'download'
+---
+
+## Overview
+
+Openlane UI offers two primary installation paths:
+
+<CardGroup cols={2}>
+  <Card title="Console Application" icon="browser">
+    Full SaaS platform for compliance management (requires backend API)
+  </Card>
+  <Card title="Component Library" icon="puzzle-piece">
+    Install `@repo/ui` package for use in your own projects
+  </Card>
+</CardGroup>
+
+---
+
+## Console Application Installation
+
+### System Requirements
+
+<Note>
+  Ensure your system meets these requirements before proceeding.
+</Note>
+
+| Requirement | Version | Notes |
+|------------|---------|-------|
+| **Bun** | 1.2.16+ | JavaScript runtime and package manager |
+| **Node.js** | 24.14.x | Required by some dependencies |
+| **Git** | Latest | For version control |
+| **Task** | Latest | Optional but recommended for running commands |
+| **Operating System** | macOS, Linux, Windows | See platform-specific notes below |
+
+### Platform-Specific Setup
+
+<Tabs>
+  <Tab title="macOS">
+    **Recommended**: Use the automated setup script
+
+    ```bash
+    # Clone repository
+    git clone git@github.com:theopenlane/openlane-ui.git
+    cd openlane-ui
+
+    # Run automated setup
+    task local-setup
+    ```
+
+    This installs:
+    - Bun package manager via curl
+    - Pre-commit hooks via Homebrew
+    - All project dependencies
+    - Git hooks for code quality
+  </Tab>
+
+  <Tab title="Linux">
+    **Manual Installation Required**
+
+    ```bash
+    # Clone repository
+    git clone git@github.com:theopenlane/openlane-ui.git
+    cd openlane-ui
+
+    # Install Bun
+    curl -fsSL https://bun.sh/install | bash
+
+    # Install dependencies
+    bun install
+
+    # Optional: Install pre-commit
+    pip install pre-commit
+    pre-commit install
+    pre-commit install-hooks
+    ```
+
+    <Accordion title="Task Runner Installation (Optional)">
+      Install Task for easier command execution:
+
+      ```bash
+      # Using snap
+      sudo snap install task --classic
+
+      # Or download binary
+      sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+      ```
+    </Accordion>
+  </Tab>
+
+  <Tab title="Windows">
+    **Using WSL2 (Recommended)**
+
+    ```powershell
+    # Enable WSL2
+    wsl --install
+
+    # Inside WSL2 Ubuntu terminal
+    git clone git@github.com:theopenlane/openlane-ui.git
+    cd openlane-ui
+
+    # Install Bun
+    curl -fsSL https://bun.sh/install | bash
+
+    # Install dependencies  
+    bun install
+    ```
+
+    **Native Windows**
+
+    Bun support on Windows is experimental. Consider using WSL2 for best experience.
+  </Tab>
+</Tabs>
+
+### Environment Configuration
+
+<Steps>
+  <Step title="Copy Environment Template">
+    ```bash
+    cp ./config/.env.example ./apps/console/.env
+    ```
+
+    <Warning>
+      Turbo v2 requires `.env` files in the app directory (`apps/console/.env`), not the monorepo root.
+    </Warning>
+  </Step>
+
+  <Step title="Configure Core Settings">
+    Edit `apps/console/.env` with your configuration:
+
+    ```bash
+    # Site Configuration
+    NEXT_PUBLIC_SITE_URL=http://localhost:3001
+
+    # Backend API URLs (adjust port if needed)
+    NEXT_PUBLIC_OPENLANE_URL=http://localhost:17608
+    NEXT_PUBLIC_API_GQL_URL=http://localhost:17608/query
+    API_REST_URL=http://localhost:17608
+    API_GQL_URL=http://localhost:17608/query
+
+    # Authentication Secrets (generate new ones)
+    AUTH_SECRET=$(openssl rand -base64 32)
+    NEXTAUTH_SECRET=$(openssl rand -base64 32)
+
+    # Session Configuration
+    SESSION_COOKIE_NAME=temporary-cookie
+    SESSION_COOKIE_DOMAIN=              # Leave empty for localhost
+    SESSION_COOKIE_EXPIRATION_MINUTES=10
+    SESSION_NEXAUTH_MAX_AGE=7200
+    COOKIE_DOMAIN=                      # Leave empty for localhost
+
+    # Domain Restrictions
+    NEXT_PUBLIC_ALLOWED_LOGIN_DOMAINS=  # Leave empty to allow all domains
+    ```
+  </Step>
+
+  <Step title="Configure OAuth Providers (Optional)">
+    <Tabs>
+      <Tab title="GitHub">
+        1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+        2. Create a new OAuth App or GitHub App
+        3. Set authorization callback URL: `http://localhost:3001/api/auth/callback/github`
+        4. Add credentials to `.env`:
+
+        ```bash
+        AUTH_GITHUB_ID=your_client_id
+        AUTH_GITHUB_SECRET=your_client_secret
+        ```
+
+        [GitHub OAuth Documentation →](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app)
+      </Tab>
+
+      <Tab title="Google">
+        1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+        2. Create a new project or select existing
+        3. Enable Google+ API
+        4. Create OAuth 2.0 credentials
+        5. Add authorized redirect URI: `http://localhost:3001/api/auth/callback/google`
+        6. Add credentials to `.env`:
+
+        ```bash
+        AUTH_GOOGLE_ID=your_client_id.apps.googleusercontent.com
+        AUTH_GOOGLE_SECRET=your_client_secret
+        ```
+
+        [Google OAuth Setup Guide →](https://support.google.com/cloud/answer/15549257)
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Configure Optional Features">
+    <AccordionGroup>
+      <Accordion title="Stripe Billing" icon="stripe">
+        ```bash
+        # Enable billing features
+        NEXT_PUBLIC_ENABLE_PLAN=true
+        STRIPE_SECRET_KEY=sk_test_...
+        ```
+      </Accordion>
+
+      <Accordion title="AI Suggestions (Vertex AI)" icon="brain">
+        ```bash
+        NEXT_PUBLIC_AI_SUGGESTIONS_ENABLED=true
+        GOOGLE_AI_PROJECT_ID=your-project-id
+        GOOGLE_AI_REGION=us-central1
+        GOOGLE_AI_MODEL_NAME=gemini-2.5-flash
+        GEMINI_API_KEY=your-api-key
+        GOOGLE_APPLICATION_CREDENTIALS=.env.service-account-key.json
+        GOOGLE_RAG_CORPUS_ID=your-corpus-id
+        ```
+      </Accordion>
+
+      <Accordion title="Questionnaire Creation (SurveyJS)" icon="clipboard">
+        ```bash
+        NEXT_PUBLIC_INCLUDE_QUESTIONNAIRE_CREATION=true
+        NEXT_PUBLIC_SURVEYJS_KEY=your-license-key  # Optional for local dev
+        ```
+      </Accordion>
+
+      <Accordion title="Google Maps Integration" icon="map">
+        ```bash
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-maps-api-key
+        ```
+      </Accordion>
+
+      <Accordion title="Analytics (Pirsch)" icon="chart-line">
+        ```bash
+        NEXT_PUBLIC_PIRSCH_KEY=your-public-key
+        PIRSCH_SECRET=your-secret-key
+        PIRSCH_CLIENT_ID=your-client-id
+        ```
+      </Accordion>
+
+      <Accordion title="Chatbot & Support" icon="comments">
+        ```bash
+        # Enable chatbot
+        NEXT_PUBLIC_ENABLE_CHATBOT=true
+
+        # DevRev Support Chat
+        NEXT_PUBLIC_ENABLE_DEVREV_CHAT=true
+        NEXT_PUBLIC_CHAT_APP_ID=your-app-id
+        DEVREV_AAT=your-auth-token
+        ```
+      </Accordion>
+
+      <Accordion title="reCAPTCHA" icon="shield">
+        ```bash
+        NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your-site-key
+        RECAPTCHA_SECRET_KEY=your-secret-key
+        ```
+      </Accordion>
+    </AccordionGroup>
+  </Step>
+</Steps>
+
+### Backend API Setup
+
+<Warning>
+  The console **requires** the Openlane backend API. It cannot function standalone.
+</Warning>
+
+<Steps>
+  <Step title="Clone Core Repository">
+    ```bash
+    git clone git@github.com:theopenlane/core.git
+    cd core
+    ```
+  </Step>
+
+  <Step title="Follow Backend Setup">
+    Refer to the [core repository documentation](https://github.com/theopenlane/core?tab=readme-ov-file#development) for:
+    - Database setup
+    - API configuration  
+    - Test data creation
+    - Running the server
+  </Step>
+
+  <Step title="Verify Backend">
+    Ensure the API is running:
+
+    ```bash
+    # Test REST endpoint
+    curl http://localhost:17608/livez
+
+    # Test GraphQL endpoint
+    curl http://localhost:17608/query -X POST \
+      -H "Content-Type: application/json" \
+      -d '{"query":"{__schema{types{name}}}"}'  
+    ```
+  </Step>
+</Steps>
+
+### Development Workflow
+
+<Steps>
+  <Step title="Install Dependencies">
+    ```bash
+    task install
+    # or
+    bun install
+    ```
+  </Step>
+
+  <Step title="Start Development Server">
+    <Tabs>
+      <Tab title="Console Only">
+        ```bash
+        task dev:console
+        # or
+        bun dev --filter={apps/console}
+        ```
+
+        Opens on [http://localhost:3001](http://localhost:3001)
+      </Tab>
+
+      <Tab title="All Apps">
+        ```bash
+        task dev
+        # or  
+        bun dev
+        ```
+
+        Starts:
+        - Console: `http://localhost:3001`
+        - Storybook: `http://localhost:6006`
+      </Tab>
+
+      <Tab title="Storybook Only">
+        ```bash
+        task dev:storybook
+        # or
+        bun dev --filter={apps/storybook}
+        ```
+
+        Opens on [http://localhost:6006](http://localhost:6006)
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Build for Production">
+    ```bash
+    task build
+    # or
+    bun run build
+    ```
+
+    Outputs:
+    - Console: `.next/` directory
+    - Storybook: `storybook-static/` directory
+  </Step>
+</Steps>
+
+---
+
+## Component Library Installation
+
+Use the `@repo/ui` package in your own projects.
+
+<Note>
+  The component library is currently workspace-only. For external use, you'll need to clone the repository.
+</Note>
+
+### Using in the Monorepo
+
+If you're adding a new app to the Openlane UI monorepo:
+
+<Steps>
+  <Step title="Add Package Dependency">
+    In your app's `package.json`:
+
+    ```json
+    {
+      "dependencies": {
+        "@repo/ui": "workspace:*"
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Install Peer Dependencies">
+    ```json
+    {
+      "dependencies": {
+        "react": "19.2.4",
+        "react-dom": "19.2.4",
+        "next": "16.1.6",
+        "tailwindcss": "^4.1.13"
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Import Styles">
+    In your root layout or app entry:
+
+    ```tsx
+    import '@repo/ui/styles.css'
+    ```
+  </Step>
+
+  <Step title="Configure Tailwind">
+    Create `tailwind.config.ts`:
+
+    ```typescript
+    import type { Config } from 'tailwindcss'
+    import sharedConfig from '@repo/tailwind-config'
+
+    const config: Config = {
+      ...sharedConfig,
+      content: [
+        './src/**/*.{ts,tsx}',
+        '../../packages/ui/src/**/*.{ts,tsx}',
+      ],
+    }
+
+    export default config
+    ```
+  </Step>
+
+  <Step title="Use Components">
+    Import and use any component:
+
+    ```tsx
+    import { Button } from '@repo/ui/button'
+    import { Input } from '@repo/ui/input'
+    import { Card } from '@repo/ui/cardpanel'
+
+    export default function MyPage() {
+      return (
+        <Card>
+          <Input placeholder="Enter text..." />
+          <Button>Submit</Button>
+        </Card>
+      )
+    }
+    ```
+  </Step>
+</Steps>
+
+### Available Components
+
+The `@repo/ui` package includes 50+ components:
+
+<AccordionGroup>
+  <Accordion title="Form Components" icon="input-text">
+    - `button` - Customizable button with variants
+    - `input` - Text input field
+    - `textarea` - Multi-line text input  
+    - `select` - Dropdown select
+    - `checkbox` - Checkbox input
+    - `switch` - Toggle switch
+    - `radio-group` - Radio button group
+    - `form` - Form wrapper with validation
+    - `label` - Form label
+    - `password-input` - Password field with toggle
+    - `input-otp` - One-time password input
+    - `tag-input` - Multi-tag input
+    - `calendar` - Date picker
+    - `calendar-popover` - Calendar in popover
+  </Accordion>
+
+  <Accordion title="Layout Components" icon="table-cells">
+    - `cardpanel` - Card container
+    - `panel` - Generic panel
+    - `grid` - Grid layout
+    - `separator` - Divider line
+    - `tabs` - Tab navigation
+    - `sheet` - Slide-out panel
+  </Accordion>
+
+  <Accordion title="Data Display" icon="table">
+    - `table` - Basic table
+    - `data-table` - Advanced data table with sorting/filtering
+    - `badge` - Status badge
+    - `avatar` - User avatar
+    - `line-chart` - Line chart visualization
+    - `donut-chart` - Donut chart
+    - `tag` - Label tag
+    - `progress-circle` - Circular progress indicator
+  </Accordion>
+
+  <Accordion title="Navigation" icon="compass">
+    - `breadcrumb` - Breadcrumb navigation
+    - `pagination` - Page navigation
+    - `dropdown-menu` - Dropdown menu
+    - `command` - Command palette
+  </Accordion>
+
+  <Accordion title="Feedback & Overlays" icon="bell">
+    - `alert` - Alert message
+    - `alert-dialog` - Modal alert dialog
+    - `dialog` - Generic dialog
+    - `confirmation-dialog` - Confirm action dialog
+    - `toast` / `toaster` - Toast notifications
+    - `popover` - Popover overlay
+    - `tooltip` - Tooltip
+  </Accordion>
+
+  <Accordion title="Specialized" icon="wand-sparkles">
+    - `page-heading` - Page header
+    - `logo` - Openlane logo
+    - `kbd` - Keyboard shortcut display
+    - `info` - Info tooltip
+    - `message-box` - Message container
+    - `country-dropdown` - Country selector
+    - `country-flag` - Flag icon
+    - `infinite-scroll` - Infinite scroll container
+    - `multiple-selector` - Multi-select input
+  </Accordion>
+</AccordionGroup>
+
+View all components in [Storybook](https://storybook.theopenlane.io/).
+
+---
+
+## Verification & Testing
+
+### Verify Installation
+
+<CodeGroup>
+
+```bash Health Check
+# Check if console is accessible
+curl http://localhost:3001
+
+# Verify build works
+task build
+
+# Run linter
+task lint
+```
+
+```bash Run Tests
+# Run all tests
+task test
+# or
+bun test
+```
+
+```bash Type Checking
+# Check TypeScript types
+bun run type-check
+```
+
+</CodeGroup>
+
+### Common Build Commands
+
+| Command | Description |
+|---------|-------------|
+| `task install` | Install all dependencies |
+| `task build` | Build all apps and packages |
+| `task dev` | Start all apps in dev mode |
+| `task dev:console` | Start console app only |
+| `task dev:storybook` | Start Storybook only |
+| `task clean` | Remove build artifacts and node_modules |
+| `task reinstall` | Clean and reinstall everything |
+| `task lint` | Run ESLint |
+| `task precommit-full` | Run all pre-commit hooks |
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Bun installation fails" icon="x">
+    **Symptoms**: `curl` command fails or Bun doesn't install
+
+    **Solutions**:
+    1. Check internet connection
+    2. Verify system compatibility (Bun requires Linux/macOS/WSL2)
+    3. Try manual download from [bun.sh](https://bun.sh)
+    4. On Windows, use WSL2 instead of native Windows
+  </Accordion>
+
+  <Accordion title="Dependency installation errors" icon="triangle-exclamation">
+    **Symptoms**: `bun install` fails with resolution errors
+
+    **Solutions**:
+    ```bash
+    # Clear cache and reinstall
+    rm -rf node_modules bun.lock
+    bun install
+
+    # Or use task command
+    task reinstall
+    ```
+  </Accordion>
+
+  <Accordion title="TypeScript errors after install" icon="code">
+    **Symptoms**: Build fails with type errors
+
+    **Solutions**:
+    ```bash
+    # Rebuild packages
+    bun run turbo-clean
+    task build
+
+    # Check TypeScript version
+    bun --version
+    ```
+  </Accordion>
+
+  <Accordion title="Environment variables not loading" icon="gear">
+    **Symptoms**: App can't connect to backend or features missing
+
+    **Solutions**:
+    1. Verify `.env` is in `apps/console/` not root
+    2. Restart dev server after .env changes
+    3. Check for typos in variable names
+    4. Use `NEXT_PUBLIC_` prefix for client-side variables
+  </Accordion>
+
+  <Accordion title="Port conflicts" icon="network-wired">
+    **Symptoms**: "Port already in use" error
+
+    **Solutions**:
+    ```bash
+    # Find process using port
+    lsof -i :3001
+    # or
+    netstat -an | grep 3001
+
+    # Kill process or change port in package.json
+    "dev": "next dev -p 3002"
+    ```
+  </Accordion>
+
+  <Accordion title="GraphQL generation fails" icon="database">
+    **Symptoms**: Codegen errors or missing types
+
+    **Solutions**:
+    ```bash
+    # Regenerate GraphQL code
+    cd packages/codegen
+    task codegen:codegen
+
+    # Ensure backend schema is accessible
+    curl http://localhost:17608/query
+    ```
+  </Accordion>
+
+  <Accordion title="Tailwind styles not applying" icon="paintbrush">
+    **Symptoms**: Components render but have no styles
+
+    **Solutions**:
+    1. Verify `@repo/ui/styles.css` is imported
+    2. Check Tailwind config includes UI package path
+    3. Restart dev server
+    4. Clear `.next` cache: `rm -rf .next`
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Console Features"
+    icon="browser"
+    href="/console/overview"
+  >
+    Explore the console application capabilities
+  </Card>
+  <Card
+    title="Component Usage"
+    icon="palette"
+    href="/components/usage"
+  >
+    Learn how to use the component library
+  </Card>
+  <Card
+    title="Architecture"
+    icon="sitemap"
+    href="/architecture/monorepo"
+  >
+    Understand the monorepo structure
+  </Card>
+  <Card
+    title="Development Guide"
+    icon="code"
+    href="/development/setup"
+  >
+    Deep dive into development workflows
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+- **Repository**: [github.com/theopenlane/openlane-ui](https://github.com/theopenlane/openlane-ui)
+- **Backend API**: [github.com/theopenlane/core](https://github.com/theopenlane/core)  
+- **Contributing Guide**: [.github/CONTRIBUTING.md](https://github.com/theopenlane/openlane-ui/blob/main/.github/CONTRIBUTING.md)
+- **Taskfile**: [Taskfile.yaml](https://github.com/theopenlane/openlane-ui/blob/main/Taskfile.yaml)

@@ -1,0 +1,300 @@
+---
+title: '@repo/codegen'
+description: 'GraphQL code generation package for TypeScript type-safe API interactions'
+---
+
+## Overview
+
+The `@repo/codegen` package provides GraphQL code generation using [@graphql-codegen](https://the-guild.dev/graphql/codegen). It generates TypeScript types, hooks, and utilities from GraphQL queries and mutations, enabling type-safe interactions with the Openlane Core GraphQL API.
+
+## Installation
+
+```bash
+pnpm add @repo/codegen
+```
+
+## Key Features
+
+- **Auto-generated TypeScript types** from GraphQL schema
+- **Type-safe query and mutation hooks**
+- **GraphQL document nodes** for use with GraphQL clients
+- **Introspection schema** for tooling support
+- **Custom scalar mappings** (DateTime, UUID, JSON, etc.)
+
+## Architecture
+
+The package uses `graphql-codegen.yml` configuration to generate code from:
+
+- **Schema Source**: `https://raw.githubusercontent.com/theopenlane/core/main/internal/graphapi/clientschema/schema.graphql`
+- **Query/Mutation Files**: `./query/**/*.ts`
+- **Output**: `./src/schema.ts` and `./src/introspectionschema.json`
+
+### Generated Files
+
+| File | Description |
+|------|-------------|
+| `src/schema.ts` | Main export with all types, queries, mutations |
+| `src/type-names.ts` | Object type constants and metadata |
+| `src/introspectionschema.json` | Schema introspection data |
+| `query/*.ts` | GraphQL query/mutation definitions |
+
+## Usage
+
+### Importing Types
+
+```tsx
+import { 
+  User, 
+  Organization,
+  OrderDirection,
+  CreateEntityInput,
+  UpdateEntityInput 
+} from '@repo/codegen/src/schema'
+```
+
+### Using Generated Hooks
+
+The package generates hooks for queries and mutations based on your GraphQL documents:
+
+```tsx
+import { useUpdateUserNameMutation } from '@repo/codegen/src/schema'
+
+function UserProfile({ userId }: { userId: string }) {
+  const [{ fetching: isSubmitting }, updateUserName] = useUpdateUserNameMutation()
+
+  const handleUpdateName = async (firstName: string, lastName: string) => {
+    await updateUserName({
+      updateUserId: userId,
+      input: {
+        firstName,
+        lastName,
+      },
+    })
+  }
+
+  return (
+    <form onSubmit={(e) => {
+      e.preventDefault()
+      handleUpdateName('John', 'Doe')
+    }}>
+      {/* form fields */}
+    </form>
+  )
+}
+```
+
+### Importing Type Constants
+
+```tsx
+import { ObjectTypes, ObjectNames, OBJECT_TYPE_PERMISSIONS_CONFIG } from '@repo/codegen/src/type-names'
+
+// Use object type constants
+const entityType = ObjectTypes.Entity
+const entityName = ObjectNames.Entity
+```
+
+### Using Enums
+
+```tsx
+import { 
+  OrderDirection,
+  OrgMembershipRole,
+  TaskTaskStatus 
+} from '@repo/codegen/src/schema'
+
+// Sort configuration
+const sortConditions = [
+  { field: 'createdAt', direction: OrderDirection.DESC },
+  { field: 'name', direction: OrderDirection.ASC }
+]
+
+// Role checks
+if (membership.role === OrgMembershipRole.ADMIN) {
+  // Admin-specific logic
+}
+```
+
+## Code Generation Workflow
+
+### 1. Create GraphQL Queries
+
+Add queries/mutations to `/query` directory. Group by domain (e.g., `organization.graphql`, `user.graphql`):
+
+```graphql
+# query/organization.ts
+import { gql } from 'graphql-request'
+
+export const GET_ORGANIZATIONS = gql`
+  query GetOrganizations($where: OrganizationWhereInput) {
+    organizations(where: $where) {
+      edges {
+        node {
+          id
+          name
+          displayName
+        }
+      }
+    }
+  }
+`
+```
+
+### 2. Run Code Generation
+
+```bash
+task codegen:codegen
+```
+
+Or directly:
+
+```bash
+pnpm codegen
+```
+
+### 3. Use Generated Code
+
+```tsx
+import { useGetOrganizationsQuery } from '@repo/codegen/src/schema'
+
+function OrganizationList() {
+  const [{ data, fetching }] = useGetOrganizationsQuery({
+    variables: {
+      where: { displayName: { contains: 'Acme' } }
+    }
+  })
+
+  if (fetching) return <div>Loading...</div>
+  
+  return (
+    <ul>
+      {data?.organizations?.edges?.map((edge) => (
+        <li key={edge.node.id}>{edge.node.displayName}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+## Configuration
+
+### Scalar Mappings
+
+Custom scalars are mapped to TypeScript types:
+
+```yaml
+scalars:
+  DateTime: string
+  Date: string
+  Decimal: number
+  UUID: string
+  ID: string
+  JSON: any
+  Upload: any
+```
+
+### CodeGen Features
+
+- `exposeDocument: true` - Adds document field to each hook
+- `exposeQueryKeys: true` - Generates `getKey()` functions for cache updates
+- `addInfiniteQuery: true` - Generates infinite query hooks
+- `exposeMutationKeys: true` - Generates mutation keys
+- `exposeFetcher: true` - Generates fetcher functions
+
+## Common Patterns
+
+### Filtering and Pagination
+
+```tsx
+import { 
+  EntityWhereInput, 
+  EntityOrderField,
+  OrderDirection 
+} from '@repo/codegen/src/schema'
+
+const where: EntityWhereInput = {
+  name: { contains: 'vendor' },
+  status: { eq: 'ACTIVE' }
+}
+
+const orderBy = {
+  field: EntityOrderField.CreatedAt,
+  direction: OrderDirection.DESC
+}
+```
+
+### Type-safe Mutations
+
+```tsx
+import { 
+  CreateEntityInput,
+  UpdateEntityInput 
+} from '@repo/codegen/src/schema'
+
+const createInput: CreateEntityInput = {
+  name: 'New Entity',
+  entityType: 'vendor',
+  status: EntityEntityStatus.Active
+}
+
+const updateInput: UpdateEntityInput = {
+  name: 'Updated Name',
+  description: 'New description'
+}
+```
+
+### Working with Fragments
+
+```tsx
+import { 
+  ControlListFieldsFragment,
+  User 
+} from '@repo/codegen/src/schema'
+
+function ControlCard({ control }: { control: ControlListFieldsFragment }) {
+  return (
+    <div>
+      <h3>{control.name}</h3>
+      <p>{control.description}</p>
+    </div>
+  )
+}
+```
+
+## Best Practices
+
+1. **Use Apollo GraphQL Explorer** for query development: [Apollo Sandbox](https://studio.apollographql.com/sandbox/explorer)
+2. **Group queries by domain** - Keep related queries in the same file
+3. **Use fragments** for reusable field selections
+4. **Run codegen after schema changes** - Keep generated types in sync
+5. **Import from schema.ts** - All generated types are exported from the main schema file
+
+## Troubleshooting
+
+### Types not updating
+
+Run the codegen command to regenerate types:
+
+```bash
+task codegen:codegen
+```
+
+### Import errors
+
+Ensure you're importing from the correct path:
+
+```tsx
+// Correct
+import { User } from '@repo/codegen/src/schema'
+
+// Incorrect
+import { User } from '@repo/codegen'
+```
+
+### Schema changes not reflected
+
+The schema is fetched from the upstream repository. If Core API changes, run codegen to pull the latest schema.
+
+## Related
+
+- [GraphQL Codegen Documentation](https://the-guild.dev/graphql/codegen)
+- [Openlane Core API](https://api.theopenlane.io/query)

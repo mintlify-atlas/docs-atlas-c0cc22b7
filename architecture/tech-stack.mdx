@@ -1,0 +1,638 @@
+---
+title: 'Technology Stack'
+description: 'Complete overview of technologies, frameworks, and tools used in Openlane UI'
+---
+
+## Overview
+
+Openlane UI is built with modern web technologies focused on performance, developer experience, and maintainability.
+
+<CardGroup cols={3}>
+  <Card title="React 19.2.4" icon="react">
+    Latest React with concurrent features
+  </Card>
+  <Card title="Next.js 16.1.6" icon="globe">
+    Full-stack React framework
+  </Card>
+  <Card title="TypeScript 5.x" icon="code">
+    Type-safe development
+  </Card>
+</CardGroup>
+
+## Core Framework
+
+### Next.js 16.1.6
+
+The foundation of Openlane UI applications.
+
+<Accordion title="Features Used">
+- **App Router:** Modern routing with React Server Components
+- **API Routes:** Backend API endpoints
+- **Middleware:** Authentication and request handling
+- **Image Optimization:** Automatic image optimization
+- **Font Optimization:** Google Fonts with zero layout shift
+- **Bundle Analysis:** Performance monitoring
+</Accordion>
+
+<Accordion title="Configuration">
+```javascript
+// next.config.js
+export default {
+  reactStrictMode: true,
+  swcMinify: true,
+  experimental: {
+    serverActions: true
+  }
+}
+```
+</Accordion>
+
+### React 19.2.4
+
+Latest version with cutting-edge features.
+
+<CardGroup cols={2}>
+  <Card title="Server Components" icon="server">
+    Zero-bundle components for better performance
+  </Card>
+  <Card title="Server Actions" icon="bolt">
+    Type-safe server mutations
+  </Card>
+  <Card title="Concurrent Rendering" icon="gauge-high">
+    Improved responsiveness
+  </Card>
+  <Card title="Automatic Batching" icon="layer-group">
+    Optimized state updates
+  </Card>
+</CardGroup>
+
+<Info>
+  React 19 is enforced across the entire monorepo via `resolutions` in the root `package.json`.
+</Info>
+
+## Runtime & Tooling
+
+### Bun 1.2.16
+
+All-in-one JavaScript runtime and package manager.
+
+<Accordion title="Why Bun?">
+**Performance Benefits:**
+- 20x faster package installation vs npm
+- Native TypeScript execution
+- Built-in bundler and test runner
+- Fast task execution
+
+**Features Used:**
+- Package management with workspaces
+- Script execution
+- Development server
+- Test runner
+</Accordion>
+
+<Accordion title="Configuration">
+```json
+"packageManager": "bun@1.2.16",
+"engines": {
+  "node": "24.14.x"
+}
+```
+</Accordion>
+
+### Turborepo 2.8.10
+
+High-performance monorepo build system.
+
+<CardGroup cols={2}>
+  <Card title="Incremental Builds" icon="rocket">
+    Only rebuilds what changed
+  </Card>
+  <Card title="Remote Caching" icon="cloud">
+    Share build cache across teams
+  </Card>
+  <Card title="Parallel Execution" icon="bolt">
+    Maximum CPU utilization
+  </Card>
+  <Card title="Content Hashing" icon="fingerprint">
+    Smart change detection
+  </Card>
+</CardGroup>
+
+## Styling
+
+### Tailwind CSS 4.1.13
+
+Next-generation Tailwind with Oxide engine.
+
+<Accordion title="Tailwind v4 Features">
+**New in v4:**
+- **Oxide Engine:** 10x faster compilation
+- **Zero Config:** Works out of the box
+- **Native CSS:** No more purge configuration
+- **PostCSS Plugin:** `@tailwindcss/postcss@^4.1.13`
+- **Better IntelliSense:** Improved autocomplete
+
+**PostCSS Configuration:**
+```javascript
+// postcss.config.mjs
+export default {
+  plugins: {
+    '@tailwindcss/postcss': {},
+  },
+}
+```
+</Accordion>
+
+<Accordion title="Tailwind Plugins">
+- `@tailwindcss/typography@^0.5.16` - Beautiful prose styling
+- `@tailwindcss/forms@latest` - Form element styling
+- `tailwind-merge@^3.3.1` - Merge conflicting classes
+- `tailwind-variants@^3.0.0` - Component variants
+- `tw-animate-css@^1.3.8` - Animation utilities
+- `tailwind-scrollbar-hide@^4.0.0` - Hide scrollbars
+</Accordion>
+
+<Accordion title="Design System">
+**Utility-First Approach:**
+```tsx
+<button className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+  Click me
+</button>
+```
+
+**With Class Variance Authority:**
+```tsx
+import { cva } from 'class-variance-authority'
+
+const button = cva('rounded-lg px-4 py-2', {
+  variants: {
+    intent: {
+      primary: 'bg-blue-600 text-white hover:bg-blue-700',
+      secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+    }
+  }
+})
+```
+</Accordion>
+
+## UI Component Libraries
+
+### Radix UI
+
+Unstyled, accessible component primitives.
+
+<Accordion title="Radix Components Used">
+**Installed Primitives:**
+- `@radix-ui/react-dialog@^1.1.15` - Modals and dialogs
+- `@radix-ui/react-dropdown-menu@^2.1.16` - Dropdown menus
+- `@radix-ui/react-popover@^1.1.15` - Popovers and tooltips
+- `@radix-ui/react-select@^2.2.6` - Custom select inputs
+- `@radix-ui/react-toast@^1.2.15` - Toast notifications
+- `@radix-ui/react-tabs@^1.1.13` - Tab interfaces
+- `@radix-ui/react-checkbox@^1.3.3` - Checkboxes
+- `@radix-ui/react-switch@^1.2.6` - Toggle switches
+- `@radix-ui/react-slider@^1.3.6` - Range sliders
+- `@radix-ui/react-accordion@^1.1.2` - Accordions
+- ...and 10+ more
+
+**Benefits:**
+- Full keyboard navigation
+- Screen reader support
+- Focus management
+- ARIA attributes
+</Accordion>
+
+### Plate.js 49.1.5
+
+Powerful rich text editor framework.
+
+<Accordion title="Plate Features">
+**30+ Plugins Installed:**
+- Basic nodes (paragraphs, headings, lists)
+- Basic styles (bold, italic, underline)
+- Code blocks with syntax highlighting
+- Tables with resizable columns
+- Media embeds (images, videos, YouTube)
+- Markdown support
+- AI-powered suggestions
+- Comments and collaboration
+- Math equations
+- Mentions and autocomplete
+- Slash commands
+- Drag-and-drop
+- Excalidraw diagrams
+- Table of contents
+
+**Version:** Latest 49.x series with v52 AI features
+</Accordion>
+
+### Lucide React 0.576.0
+
+Beautiful, consistent icon library.
+
+```tsx
+import { Search, Menu, X, ChevronDown } from 'lucide-react'
+
+<Search className="h-4 w-4" />
+```
+
+- 1000+ icons
+- Tree-shakeable
+- Customizable size and color
+- Consistent 24x24 grid
+
+## State Management
+
+<CardGroup cols={2}>
+  <Card title="Zustand 5.0.10" icon="store">
+    Simple, scalable state management
+  </Card>
+  <Card title="TanStack Query 5.66.9" icon="database">
+    Powerful data fetching and caching
+  </Card>
+  <Card title="React Hook Form 7.71.1" icon="square-check">
+    Performant form validation
+  </Card>
+  <Card title="SWR 2.3.3" icon="arrows-rotate">
+    Stale-while-revalidate data fetching
+  </Card>
+</CardGroup>
+
+### TanStack Query (React Query)
+
+<Accordion title="Features">
+- Automatic caching and invalidation
+- Background refetching
+- Optimistic updates
+- Infinite queries
+- Pagination support
+- Devtools for debugging
+
+```tsx
+import { useQuery } from '@tanstack/react-query'
+
+const { data, isLoading } = useQuery({
+  queryKey: ['organizations'],
+  queryFn: fetchOrganizations
+})
+```
+</Accordion>
+
+### Zustand
+
+<Accordion title="Example Store">
+```typescript
+import { create } from 'zustand'
+
+interface Store {
+  user: User | null
+  setUser: (user: User) => void
+}
+
+const useStore = create<Store>((set) => ({
+  user: null,
+  setUser: (user) => set({ user })
+}))
+```
+
+**Benefits:**
+- Minimal boilerplate
+- TypeScript support
+- No providers needed
+- Middleware support
+</Accordion>
+
+## GraphQL
+
+### GraphQL Code Generator 6.1.2
+
+Type-safe GraphQL client generation.
+
+<Accordion title="Stack">
+- `graphql@16.13.0` - GraphQL implementation
+- `graphql-request@7.4.0` - Lightweight GraphQL client
+- `@graphql-codegen/cli@6.1.2` - Code generator
+- `@graphql-codegen/typescript@5.0.8` - TypeScript types
+- `@graphql-codegen/typescript-operations@5.0.8` - Query types
+- `@graphql-codegen/typescript-react-query@^6.1.0` - React Query hooks
+</Accordion>
+
+<Accordion title="Workflow">
+1. Write `.graphql` query files
+2. Run `bun run codegen`
+3. Import generated hooks
+
+```typescript
+// Auto-generated, fully typed
+import { useGetOrganizationQuery } from '@repo/codegen/src/schema'
+```
+</Accordion>
+
+## Authentication
+
+### NextAuth.js (beta)
+
+Authentication for Next.js applications.
+
+<Accordion title="Providers Configured">
+- **GitHub OAuth:** `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
+- **Google OAuth:** `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`
+- **WebAuthn:** Passkey support via `@simplewebauthn/*`
+
+**Security Features:**
+- Session management
+- CSRF protection
+- Secure cookie handling
+- Domain restrictions
+</Accordion>
+
+## AI Integration
+
+<CardGroup cols={2}>
+  <Card title="Vercel AI SDK" icon="brain">
+    Unified AI framework
+  </Card>
+  <Card title="Google Vertex AI" icon="google">
+    Gemini models and RAG
+  </Card>
+  <Card title="Amazon Bedrock" icon="aws">
+    Claude and other models
+  </Card>
+  <Card title="OpenAI Compatible" icon="robot">
+    GPT and custom models
+  </Card>
+</CardGroup>
+
+<Accordion title="AI Packages">
+**Vercel AI SDK:**
+- `ai@^6.0.49` - Core AI SDK
+- `@ai-sdk/react@^2.0.102` - React hooks
+- `@ai-sdk/google@^3.0.0` - Google provider
+- `@ai-sdk/openai@^1.3.23` - OpenAI provider
+- `@ai-sdk/amazon-bedrock@^4.0.30` - Bedrock provider
+
+**Google Cloud:**
+- `@google-cloud/vertexai@^1.10.0` - Vertex AI client
+- `@google-cloud/aiplatform@^6.0.0` - AI Platform
+- `@google-cloud/storage@^7.18.0` - Cloud Storage
+
+**Features:**
+- AI-powered text suggestions in Plate.js
+- Chat interfaces with streaming
+- Document analysis
+- RAG (Retrieval-Augmented Generation)
+</Accordion>
+
+## Data Visualization
+
+### Recharts 3.2.0
+
+Composable charting library built on React components.
+
+<Accordion title="Chart Types">
+- Line charts
+- Bar charts
+- Area charts
+- Pie charts
+- Donut charts
+- Composed charts
+
+```tsx
+import { LineChart } from '@repo/ui/line-chart'
+
+<LineChart 
+  data={data} 
+  xKey="date" 
+  yKey="value" 
+/>
+```
+</Accordion>
+
+### React Force Graph 2D
+
+Interactive force-directed graph visualization.
+
+```tsx
+import ForceGraph2D from 'react-force-graph-2d'
+```
+
+Used for:
+- Organization hierarchies
+- Relationship mapping
+- Network diagrams
+
+## File Handling
+
+<Accordion title="Upload & Processing">
+**Upload:**
+- `uploadthing@7.7.4` - File uploads
+- `@uploadthing/react@7.3.3` - React components
+- `react-dropzone@^14.2.3` - Drag-and-drop
+
+**Processing:**
+- `react-pdf@^10.2.0` - PDF viewing
+- `@react-pdf/renderer@^4.3.2` - PDF generation
+- `pdf-lib@^1.17.1` - PDF manipulation
+- `docx@^9.5.1` - Word document generation
+- `file-saver@^2.0.5` - Client-side file saving
+- `html2canvas-pro@^1.5.11` - Screenshot capture
+</Accordion>
+
+## Payment Processing
+
+### Stripe 18.5.0
+
+Complete payment infrastructure.
+
+<Accordion title="Features">
+- Subscription management
+- One-time payments
+- Customer portal
+- Webhook handling
+- Invoice generation
+
+**Environment Variables:**
+- `STRIPE_SECRET_KEY` - Server-side API key
+</Accordion>
+
+## Notifications
+
+### Novu 0.24.1
+
+Open-source notification infrastructure.
+
+<Accordion title="Channels">
+- In-app notifications
+- Email notifications
+- Push notifications
+- SMS (configurable)
+
+**Packages:**
+- `@novu/node@^0.24.1` - Server SDK
+- `@novu/notification-center@^0.24.1` - React component
+</Accordion>
+
+## Developer Tools
+
+### Linting & Formatting
+
+<CardGroup cols={2}>
+  <Card title="ESLint 10.0.2" icon="file-code">
+    JavaScript/TypeScript linting
+  </Card>
+  <Card title="Prettier 3.5.3" icon="paintbrush">
+    Code formatting
+  </Card>
+</CardGroup>
+
+<Accordion title="ESLint Configuration">
+**Plugins:**
+- `@typescript-eslint/eslint-plugin@^8.55.0`
+- `eslint-plugin-react@^7.37.5`
+- `eslint-plugin-react-hooks@^7.0.1`
+- `eslint-plugin-jsx-a11y@^6.10.2` - Accessibility
+- `eslint-plugin-import@^2.32.0` - Import order
+- `eslint-config-turbo@^2.8.9` - Turborepo rules
+- `@vercel/style-guide@^6.0.0` - Vercel conventions
+
+**Extends:**
+```json
+[
+  "@vercel/style-guide/eslint/node",
+  "@vercel/style-guide/eslint/typescript",
+  "@vercel/style-guide/eslint/react"
+]
+```
+</Accordion>
+
+<Accordion title="Prettier Configuration">
+```json
+{
+  "semi": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "plugins": ["prettier-plugin-tailwindcss"]
+}
+```
+
+**Tailwind Plugin:**
+- Automatically sorts Tailwind classes
+- Consistent class ordering
+</Accordion>
+
+### Testing
+
+<Accordion title="Jest 29.7.0">
+Unit and integration testing framework.
+
+```json
+"scripts": {
+  "test": "jest"
+}
+```
+
+**Configured in Console app for:**
+- Component testing
+- Utility function testing
+- API route testing
+</Accordion>
+
+## Additional Libraries
+
+<Accordion title="Form Handling">
+- `react-hook-form@^7.71.1` - Form state management
+- `@hookform/resolvers@^5.2.2` - Validation resolvers
+- `zod@^3.24.2` - Schema validation
+- `input-otp@^1.4.2` - OTP input
+- `emblor@^1.4.7` - Tag input
+</Accordion>
+
+<Accordion title="UI Utilities">
+- `date-fns@^4.1.0` - Date manipulation
+- `react-day-picker@^9.8.0` - Calendar picker
+- `clsx@^2.1.1` - Conditional classes
+- `class-variance-authority@^0.7.1` - Component variants
+- `cmdk@^1.1.1` - Command menu
+- `sonner@^2.0.6` - Toast notifications
+- `next-themes@^0.4.0` - Theme management
+</Accordion>
+
+<Accordion title="Drag & Drop">
+- `@dnd-kit/core@^6.3.1` - DnD toolkit
+- `@dnd-kit/sortable@^10.0.0` - Sortable lists
+- `react-dnd@^16.0.1` - React DnD
+- `react-dnd-html5-backend@^16.0.1` - HTML5 backend
+</Accordion>
+
+<Accordion title="Media & Embeds">
+- `react-player@^3.3.1` - Video player
+- `react-lite-youtube-embed@^2.5.1` - YouTube embeds
+- `react-tweet@^3.2.2` - Twitter embeds
+- `qrcode.react@^4.2.0` - QR code generation
+- `react-circle-flags@^0.0.27` - Country flags
+</Accordion>
+
+## Environment Variables
+
+Over 40 environment variables configure the application:
+
+<AccordionGroup>
+  <Accordion title="Core Settings">
+    - `NODE_ENV` - Environment (development/production)
+    - `API_REST_URL` - Backend API URL
+    - `NEXT_PUBLIC_OPENLANE_URL` - Public Openlane URL
+  </Accordion>
+
+  <Accordion title="Authentication">
+    - `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET`
+    - `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`
+    - `SESSION_COOKIE_NAME` / `SESSION_COOKIE_DOMAIN`
+    - `NEXT_PUBLIC_ALLOWED_LOGIN_DOMAINS`
+  </Accordion>
+
+  <Accordion title="AI & Analytics">
+    - `GOOGLE_AI_PROJECT_ID` / `GOOGLE_AI_REGION`
+    - `GOOGLE_SERVICE_ACCOUNT_KEY_B64`
+    - `GOOGLE_RAG_CORPUS_ID`
+    - `NEXT_PUBLIC_AI_SUGGESTIONS_ENABLED`
+    - `PIRSCH_SECRET` / `PIRSCH_CLIENT_ID`
+  </Accordion>
+
+  <Accordion title="Integrations">
+    - `STRIPE_SECRET_KEY`
+    - `DEVREV_AAT` - Customer support
+    - `RECAPTCHA_SECRET_KEY`
+    - `OPENLANE_API_WRITE_TOKEN`
+  </Accordion>
+</AccordionGroup>
+
+## Version Summary
+
+| Technology | Version | Purpose |
+|------------|---------|----------|
+| React | 19.2.4 | UI framework |
+| Next.js | 16.1.6 | App framework |
+| TypeScript | 5.x | Type safety |
+| Tailwind CSS | 4.1.13 | Styling |
+| Bun | 1.2.16 | Package manager |
+| Turborepo | 2.8.10 | Build system |
+| Node.js | 24.14.x | Runtime |
+| TanStack Query | 5.66.9 | Data fetching |
+| Zustand | 5.0.10 | State management |
+| GraphQL | 16.13.0 | API layer |
+| Radix UI | Latest | UI primitives |
+| Plate.js | 49.1.5 | Rich text editor |
+| Recharts | 3.2.0 | Charts |
+| Stripe | 18.5.0 | Payments |
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="Monorepo Structure" icon="sitemap" href="/architecture/monorepo">
+    Learn about the Turborepo setup
+  </Card>
+  <Card title="Packages Overview" icon="boxes-stacked" href="/architecture/packages">
+    Explore all packages in detail
+  </Card>
+</CardGroup>

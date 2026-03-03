@@ -1,0 +1,245 @@
+---
+title: Button
+description: A versatile button component with multiple variants, sizes, and states.
+---
+
+## Overview
+
+The Button component is a flexible action element that supports multiple variants, icons, loading states, and animations. Built on top of Radix UI's Slot component for composition.
+
+## Import
+
+```tsx
+import { Button } from '@repo/ui/button'
+```
+
+## Usage
+
+### Basic Button
+
+```tsx
+import { Button } from '@repo/ui/button'
+
+export default function Example() {
+  return <Button>Click me</Button>
+}
+```
+
+### With Icon
+
+```tsx
+import { Button } from '@repo/ui/button'
+import { ArrowRight } from 'lucide-react'
+
+export default function Example() {
+  return (
+    <Button icon={<ArrowRight />} iconAnimated>
+      Continue
+    </Button>
+  )
+}
+```
+
+### Loading State
+
+```tsx
+import { Button } from '@repo/ui/button'
+
+export default function Example() {
+  return (
+    <Button loading>
+      Processing...
+    </Button>
+  )
+}
+```
+
+### Icon Position
+
+```tsx
+import { Button } from '@repo/ui/button'
+import { InfoIcon } from 'lucide-react'
+
+export default function Example() {
+  return (
+    <Button icon={<InfoIcon />} iconPosition="left">
+      Learn More
+    </Button>
+  )
+}
+```
+
+## Props
+
+<ParamField path="variant" type="string" default="primary">
+  The visual style of the button.
+  
+  Options: `primary`, `secondary`, `secondaryOutline`, `icon`, `iconButton`, `sidebar`, `transparent`, `tag`, `filled`, `light`, `outline`, `outlineLight`, `outlineInput`, `outlineInputPadding`, `redOutline`, `white`, `success`, `destructive`, `back`
+</ParamField>
+
+<ParamField path="size" type="string" default="md">
+  The size of the button.
+  
+  Options: `sm`, `md`, `lg`
+</ParamField>
+
+<ParamField path="asChild" type="boolean" default="false">
+  When true, renders the button as a Slot component for composition with child elements.
+</ParamField>
+
+<ParamField path="icon" type="ReactNode">
+  Icon element to display alongside the button text.
+</ParamField>
+
+<ParamField path="iconPosition" type="string">
+  Position of the icon relative to the text.
+  
+  Options: `left`, `center`
+</ParamField>
+
+<ParamField path="iconAnimated" type="boolean">
+  When true, applies hover animation to the icon.
+</ParamField>
+
+<ParamField path="loading" type="boolean">
+  When true, displays a loading spinner and hides the icon.
+</ParamField>
+
+<ParamField path="full" type="boolean">
+  When true, makes the button take full width.
+</ParamField>
+
+<ParamField path="childFull" type="boolean">
+  When true, makes the child wrapper take full width.
+</ParamField>
+
+<ParamField path="descriptiveTooltipText" type="string">
+  Text to display in a tooltip on hover.
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  When true, disables the button and applies disabled styles.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the button.
+</ParamField>
+
+## Variants
+
+### Primary
+
+```tsx
+<Button variant="primary">Primary Button</Button>
+```
+
+Default button style with brand colors.
+
+### Secondary
+
+```tsx
+<Button variant="secondary">Secondary Button</Button>
+```
+
+Subtle button style for secondary actions.
+
+### Success
+
+```tsx
+<Button variant="success">Success</Button>
+```
+
+Green button with checkmark icon for success states.
+
+### Destructive
+
+```tsx
+<Button variant="destructive">Delete</Button>
+```
+
+Red button for destructive actions.
+
+### Icon Button
+
+```tsx
+import { ArrowRight } from 'lucide-react'
+
+<Button variant="iconButton" icon={<ArrowRight />}>
+  Navigate
+</Button>
+```
+
+Button optimized for icon-only or icon-prominent layouts.
+
+## Sizes
+
+```tsx
+<Button size="sm">Small</Button>
+<Button size="md">Medium</Button>
+<Button size="lg">Large</Button>
+```
+
+## Examples
+
+### With Tooltip
+
+```tsx
+import { Button } from '@repo/ui/button'
+import { InfoIcon } from 'lucide-react'
+
+export default function Example() {
+  return (
+    <Button 
+      icon={<InfoIcon />}
+      descriptiveTooltipText="Click to learn more about this feature"
+    >
+      Help
+    </Button>
+  )
+}
+```
+
+### As Link
+
+```tsx
+import { Button } from '@repo/ui/button'
+import Link from 'next/link'
+
+export default function Example() {
+  return (
+    <Button asChild>
+      <Link href="/dashboard">Go to Dashboard</Link>
+    </Button>
+  )
+}
+```
+
+### Brand Icon
+
+```tsx
+import { Button } from '@repo/ui/button'
+import { GoogleIcon } from '@repo/ui/icons/google'
+
+export default function Example() {
+  return (
+    <Button 
+      icon={<GoogleIcon />} 
+      iconPosition="left" 
+      variant="secondaryOutline"
+    >
+      Continue with Google
+    </Button>
+  )
+}
+```
+
+## Accessibility
+
+- The button automatically sets `aria-label` from either the `aria-label` prop, `descriptiveTooltipText`, or text content
+- When disabled, the button has `disabled:cursor-not-allowed` styling
+- Loading state is indicated visually with a spinner icon
+- Tooltips are accessible via keyboard navigation
+
+## Source
+
+View source: `packages/ui/src/button/button.tsx`

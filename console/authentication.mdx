@@ -1,0 +1,455 @@
+---
+title: 'Authentication Features'
+description: 'Comprehensive authentication system with SSO, 2FA, WebAuthn passkeys, and OAuth support'
+---
+
+## Overview
+
+Openlane Console implements a robust, multi-layered authentication system using NextAuth.js with support for traditional credentials, OAuth providers, enterprise SSO, two-factor authentication, and modern WebAuthn passkeys.
+
+<Note>
+All authentication flows are implemented in the `(auth)` route group and managed through NextAuth.js v5 (beta).
+</Note>
+
+## Authentication Methods
+
+The Console supports multiple authentication methods that can be used individually or in combination:
+
+### Password-Based Login
+
+Traditional email and password authentication with reCAPTCHA protection.
+
+<Tabs>
+  <Tab title="User Flow">
+    <Steps>
+      <Step title="Enter Email">
+        User enters their email address. The system automatically checks for SSO requirements via WebFinger API.
+      </Step>
+      <Step title="Email Validation">
+        Email is validated against allowed domains and checked for SSO enforcement status.
+      </Step>
+      <Step title="Password Entry">
+        If SSO is not enforced (or user is org owner), password field is displayed.
+      </Step>
+      <Step title="reCAPTCHA Verification">
+        ```typescript
+        const recaptchaToken = await grecaptcha.execute(recaptchaSiteKey, { 
+          action: 'login' 
+        })
+        ```
+        Invisible reCAPTCHA validates the request before submission.
+      </Step>
+      <Step title="Credential Validation">
+        NextAuth validates credentials against the backend API and establishes session.
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="Security Features">
+    - **reCAPTCHA Integration**: Bot prevention with configurable `RECAPTCHA_SECRET_KEY`
+    - **Secure Sessions**: HttpOnly cookies with configurable domain
+    - **Password Reset Flow**: Self-service password reset via `/forgot-password`
+    - **Email Verification**: Required email verification for new accounts
+    - **Session Management**: Configurable session timeout via `SESSION_NEXAUTH_MAX_AGE`
+  </Tab>
+</Tabs>
+
+### OAuth Providers
+
+Seamless authentication with GitHub and Google OAuth.
+
+<CodeGroup>
+```typescript GitHub OAuth
+const github = async () => {
+  setDirectOAuthCookie()
+  await signIn('github', {
+    redirectTo: redirectUrl,
+  })
+}
+```
+
+```typescript Google OAuth
+const google = async () => {
+  setDirectOAuthCookie()
+  await signIn('google', {
+    redirectTo: redirectUrl,
+  })
+}
+```
+</CodeGroup>
+
+**Required Environment Variables:**
+
+```bash
+AUTH_GITHUB_ID=your_github_client_id
+AUTH_GITHUB_SECRET=your_github_client_secret
+AUTH_GOOGLE_ID=your_google_client_id
+AUTH_GOOGLE_SECRET=your_google_client_secret
+```
+
+<Warning>
+OAuth providers require proper callback URL configuration in the provider's developer console. The callback URL format is:
+`https://your-domain.com/api/auth/callback/[provider]`
+</Warning>
+
+### Enterprise SSO (OIDC)
+
+Enterprise-grade Single Sign-On using OpenID Connect.
+
+<Accordion title="SSO Configuration Flow">
+  <Steps>
+    <Step title="Configure Identity Provider">
+      Organization admins navigate to **Organization Settings → Authentication → SSO Configuration**
+      
+      Required fields:
+      - Identity Provider (e.g., Okta, Azure AD, Google Workspace)
+      - Client ID
+      - Client Secret  
+      - OIDC Discovery Endpoint (e.g., `https://your-idp.com/.well-known/openid-configuration`)
+    </Step>
+    
+    <Step title="Test SSO Connection">
+      Before enforcing SSO, admins should verify the connection:
+      ```typescript
+      // Test flow stores flag in localStorage
+      localStorage.setItem('testing_sso', 'true')
+      
+      const response = await fetch('/api/auth/sso', {
+        method: 'POST',
+        body: JSON.stringify({
+          organization_id: currentOrgId,
+          is_test: true,
+        }),
+      })
+      ```
+      Successful test redirects back with `?ssotested=1`
+    </Step>
+    
+    <Step title="Enable SSO Enforcement">
+      Once tested, toggle **Enforce SSO** to require all organization members to use SSO.
+      
+      <Note>
+      Organization owners can still use password login even when SSO is enforced, providing a safety mechanism.
+      </Note>
+    </Step>
+    
+    <Step title="User Login with SSO">
+      When a user enters their email:
+      ```typescript
+      // WebFinger API checks SSO configuration
+      const response = await fetch(
+        `/api/auth/webfinger?email=${encodeURIComponent(email)}`
+      )
+      
+      // Response indicates SSO requirements
+      {
+        success: true,
+        enforced: true,
+        provider: "OKTA",
+        organization_id: "org_123",
+        is_org_owner: false
+      }
+      ```
+      
+      If SSO is enforced, the login form shows **Continue with SSO** button instead of password field.
+    </Step>
+  </Steps>
+</Accordion>
+
+**SSO Callback Flow:**
+
+```typescript
+// apps/console/src/app/(auth)/login/sso/page.tsx
+const handleSSOCallback = async () => {
+  const code = searchParams?.get('code')
+  const state = searchParams?.get('state')
+  const organizationId = getCookie('organization_id')
+  
+  const response = await fetch('/api/auth/sso/callback', {
+    method: 'POST',
+    body: JSON.stringify({ code, state, organization_id: organizationId }),
+  })
+  
+  const data = await response.json()
+  
+  if (data.success) {
+    await signIn('credentials', {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      session: data.session,
+      type: 'oidc',
+    })
+  }
+}
+```
+
+### WebAuthn Passkeys
+
+Modern passwordless authentication using biometrics, security keys, or device authentication.
+
+<Tabs>
+  <Tab title="Registration">
+    Users can register passkeys from **User Settings → Passkeys and security keys**:
+    
+    ```typescript
+    // Get registration options from server
+    const options = await getPasskeyRegOptions({
+      email: userData?.user.email
+    })
+    
+    // Store session cookie
+    setSessionCookie(options.session)
+    
+    // Trigger browser WebAuthn API
+    const attestationResponse = await startRegistration({
+      useAutoRegister: false,  // Disable conditional UI for settings
+      optionsJSON: options.publicKey,
+    })
+    
+    // Verify registration with server
+    const verificationResult = await verifyRegistration({
+      attestationResponse
+    })
+    ```
+    
+    <Note>
+    The Console uses **SimpleWebAuthn** library for WebAuthn implementation:
+    - `@simplewebauthn/browser` - Client-side WebAuthn operations
+    - `@simplewebauthn/server` - Server-side verification
+    </Note>
+  </Tab>
+  
+  <Tab title="Authentication">
+    Login with passkey from the login screen:
+    
+    ```typescript
+    async function passKeySignIn() {
+      // Get authentication options
+      const options = await getPasskeySignInOptions({ email })
+      setSessionCookie(options.session)
+      
+      // Trigger authentication ceremony
+      const assertionResponse = await startAuthentication({
+        optionsJSON: {
+          challenge: options?.publicKey?.challenge,
+          rpId: options?.publicKey?.rpId,
+          userVerification: 'required',
+        },
+      })
+      
+      // Verify and create session
+      const verificationResult = await verifyAuthentication({
+        assertionResponse
+      })
+      
+      if (verificationResult.success) {
+        await signIn('passkey', {
+          email,
+          session: verificationResult.session,
+          accessToken: verificationResult.access_token,
+          refreshToken: verificationResult.refresh_token,
+        })
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Device Management">
+    Users can manage multiple passkeys:
+    
+    - View all registered passkeys with device information
+    - See registration dates
+    - Remove passkeys
+    - Add additional backup passkeys
+    
+    The Console includes a passkey device database (`lib/passkeys.json`) that provides friendly names and icons for recognized authenticators (e.g., "Touch ID", "Windows Hello", "YubiKey").
+  </Tab>
+</Tabs>
+
+<Warning>
+Common WebAuthn errors:
+- **AbortError / NotAllowedError**: User cancelled the operation
+- **InvalidStateError**: Authenticator already registered for this device
+- **NotSupportedError**: Browser doesn't support WebAuthn
+</Warning>
+
+### Two-Factor Authentication (2FA)
+
+TOTP-based two-factor authentication with recovery codes.
+
+<Steps>
+  <Step title="User Enables 2FA">
+    From user settings, users scan a QR code with an authenticator app (Google Authenticator, Authy, 1Password, etc.)
+  </Step>
+  
+  <Step title="Login Redirect">
+    After successful password authentication, users with 2FA enabled are redirected to `/tfa`
+  </Step>
+  
+  <Step title="Enter TOTP Code">
+    ```typescript
+    // 6-digit authenticator code
+    <InputOTP maxLength={6} onChange={handleOtpChange}>
+      {Array.from({ length: 6 }).map((_, index) => (
+        <InputOTPSlot key={index} index={index} />
+      ))}
+    </InputOTP>
+    ```
+    
+    Code is verified server-side:
+    ```typescript
+    const response = await secureFetch('/api/verifyOTP', {
+      method: 'POST',
+      body: JSON.stringify({ totp_code: otp }),
+    })
+    ```
+  </Step>
+  
+  <Step title="Recovery Codes">
+    Users can also use 8-character recovery codes if they lose access to their authenticator:
+    
+    ```typescript
+    // Switch to recovery code (8 characters)
+    <InputOTP maxLength={8}>
+      {Array.from({ length: 8 }).map((_, index) => (
+        <InputOTPSlot key={index} index={index} />
+      ))}
+    </InputOTP>
+    ```
+    
+    <Warning>
+    Recovery codes are single-use. Once a recovery code is used, it cannot be used again.
+    </Warning>
+  </Step>
+</Steps>
+
+## Session Management
+
+### Session Configuration
+
+Customize session behavior via environment variables:
+
+```bash
+# Cookie name (default: next-auth.session-token)
+SESSION_COOKIE_NAME=openlane-session
+
+# Cookie domain for subdomain sharing
+SESSION_COOKIE_DOMAIN=.yourdomain.com
+
+# Session duration in seconds (default: 30 days)
+SESSION_NEXAUTH_MAX_AGE=2592000
+```
+
+### Session Updates
+
+The Console uses NextAuth's `update()` function to refresh session data:
+
+```typescript
+const { data: sessionData, update: updateSession } = useSession()
+
+// Update session after organization switch
+await updateSession({
+  ...response.session,
+  user: {
+    ...sessionData.user,
+    accessToken: response.access_token,
+    organization: newOrgId,
+    refreshToken: response.refresh_token,
+  },
+})
+```
+
+## Domain Restrictions
+
+Restrict signups and logins to specific email domains:
+
+```bash
+# Comma-separated list of allowed domains
+NEXT_PUBLIC_ALLOWED_LOGIN_DOMAINS=company.com,partner.com
+```
+
+Organization admins can also configure allowed domains in **Organization Settings → Authentication → Allowed Domains**.
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use HTTPS in Production">
+    NextAuth requires HTTPS in production for secure cookie transmission. Set up SSL/TLS certificates for your domain.
+  </Accordion>
+  
+  <Accordion title="Rotate Secrets Regularly">
+    Rotate OAuth client secrets, API tokens, and session secrets periodically:
+    - OAuth credentials: Every 90 days
+    - Session secrets: Every 6 months
+    - API tokens: Based on your security policy
+  </Accordion>
+  
+  <Accordion title="Enable reCAPTCHA">
+    Protect against bot attacks by enabling reCAPTCHA:
+    ```bash
+    RECAPTCHA_SECRET_KEY=your_recaptcha_v3_secret
+    ```
+    Add the reCAPTCHA script to your site:
+    ```html
+    <script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY"></script>
+    ```
+  </Accordion>
+  
+  <Accordion title="Monitor Failed Login Attempts">
+    Implement rate limiting and monitoring for failed authentication attempts. The Console supports integration with logging services via `GCS_LOG_BUCKET`.
+  </Accordion>
+  
+  <Accordion title="Enforce MFA for Admins">
+    Require 2FA or passkeys for users with elevated permissions (organization owners, compliance admins).
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<Accordion title="SSO Callback Errors">
+**Problem**: Users see "SSO callback failed" after attempting SSO login
+
+**Solutions**:
+1. Verify OIDC Discovery Endpoint is accessible
+2. Check Client ID and Client Secret are correct
+3. Ensure callback URL is whitelisted in IdP: `https://your-domain.com/api/auth/sso/callback`
+4. Verify organization ID cookie is set properly
+5. Test SSO connection using the "Verify SSO connection" button
+</Accordion>
+
+<Accordion title="Passkey Registration Fails">
+**Problem**: Users cannot register passkeys (InvalidStateError)
+
+**Solutions**:
+1. User may have already registered a passkey on this device - check existing passkeys
+2. Clear browser data and try again
+3. Use a different device or authenticator
+4. Ensure `useAutoRegister: false` in settings flows
+</Accordion>
+
+<Accordion title="2FA Code Invalid">
+**Problem**: TOTP codes consistently fail validation
+
+**Solutions**:
+1. Check device time is synchronized (TOTP is time-based)
+2. Ensure user is entering the current code (codes expire every 30 seconds)
+3. Verify the correct secret was scanned during setup
+4. Use a recovery code as fallback
+</Accordion>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Dashboard" icon="chart-line" href="/console/dashboard">
+    Learn about the dashboard and user workflows
+  </Card>
+  <Card title="Organizations" icon="building" href="/console/organizations">
+    Set up multi-organization access
+  </Card>
+  <Card title="Deployment" icon="rocket" href="/console/deployment">
+    Configure authentication in production
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference">
+    Explore authentication APIs
+  </Card>
+</CardGroup>

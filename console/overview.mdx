@@ -1,0 +1,213 @@
+---
+title: 'Console Overview'
+description: 'Introduction to the Openlane Console - your central hub for compliance and security management'
+---
+
+## What is Openlane Console?
+
+Openlane Console is a comprehensive web application built with Next.js that provides organizations with a centralized platform to manage compliance programs, security controls, policies, and evidence collection. The console serves as your primary interface for maintaining and demonstrating compliance across various frameworks and standards.
+
+<Note>
+The Console runs on port **3001** by default and is built with Next.js 16, React 19, and a modern tech stack optimized for enterprise use.
+</Note>
+
+## Core Capabilities
+
+The Console provides enterprise-grade features across several key areas:
+
+<CardGroup cols={2}>
+  <Card title="Compliance Management" icon="shield-check">
+    Manage controls, policies, procedures, and risks across multiple compliance frameworks
+  </Card>
+  <Card title="Evidence Collection" icon="folder-open">
+    Centralized repository for compliance evidence with automated collection capabilities
+  </Card>
+  <Card title="Organization Management" icon="building">
+    Multi-organization support with role-based access control and team collaboration
+  </Card>
+  <Card title="Security & Authentication" icon="lock">
+    Enterprise authentication with SSO, 2FA, and WebAuthn passkey support
+  </Card>
+</CardGroup>
+
+## Key Features
+
+### Compliance Automation
+
+<AccordionGroup>
+  <Accordion title="Control Management">
+    - Create and manage security controls
+    - Map controls to compliance frameworks
+    - Track control implementation status
+    - Define control objectives and subcontrols
+    - Clone existing controls for efficiency
+  </Accordion>
+
+  <Accordion title="Policy & Procedure Management">
+    - Maintain internal policies and procedures
+    - Version control and approval workflows
+    - Policy-to-control mapping
+    - Automated policy reviews
+  </Accordion>
+
+  <Accordion title="Risk Management">
+    - Identify and track organizational risks
+    - Risk assessment and mitigation planning
+    - Risk-to-control mapping
+    - Real-time risk dashboards
+  </Accordion>
+
+  <Accordion title="Evidence Management">
+    - Upload and organize compliance evidence
+    - Automated evidence collection
+    - Evidence-to-control linking
+    - Audit trail and versioning
+  </Accordion>
+</AccordionGroup>
+
+### Program Management
+
+The Console supports comprehensive compliance program management:
+
+- **Multi-Framework Support**: Manage compliance across SOC 2, ISO 27001, HIPAA, and custom frameworks
+- **Assessment Automation**: Create and distribute questionnaires for vendor assessments
+- **Task Management**: Automated task assignment and tracking
+- **Exposure Management**: Monitor and manage security exposures
+- **Standards Registry**: Maintain a registry of applicable standards and requirements
+
+### Dashboard & Reporting
+
+Gain visibility into your compliance posture with:
+
+- **Compliance Overview**: Real-time status of compliance programs
+- **Suggested Actions**: AI-powered recommendations for compliance improvements
+- **Custom Dashboards**: Tailored views for different stakeholder needs
+- **Analytics**: Track metrics and trends across programs
+
+<Note>
+AI suggestions can be enabled via the `NEXT_PUBLIC_AI_SUGGESTIONS_ENABLED` environment variable when integrated with Google AI.
+</Note>
+
+## Technology Stack
+
+The Console is built with modern web technologies:
+
+<Tabs>
+  <Tab title="Frontend">
+    - **Framework**: Next.js 16 with App Router
+    - **UI Library**: React 19 with TypeScript
+    - **Styling**: Tailwind CSS 4
+    - **State Management**: Zustand, TanStack Query
+    - **Form Handling**: React Hook Form with Zod validation
+  </Tab>
+  
+  <Tab title="Authentication">
+    - **NextAuth.js**: Session management
+    - **OAuth Providers**: GitHub, Google
+    - **SSO**: OIDC-based enterprise SSO
+    - **WebAuthn**: Passkey support via SimpleWebAuthn
+    - **2FA**: TOTP authenticator apps with recovery codes
+  </Tab>
+  
+  <Tab title="Data & APIs">
+    - **GraphQL**: GraphQL Request with WebSocket subscriptions
+    - **API Client**: TanStack Query for data fetching
+    - **Real-time**: GraphQL subscriptions via graphql-ws
+    - **Type Safety**: Full TypeScript coverage with codegen
+  </Tab>
+  
+  <Tab title="Integrations">
+    - **Notifications**: Novu for multi-channel notifications
+    - **Payments**: Stripe for billing management
+    - **AI/ML**: Google Vertex AI and Amazon Bedrock
+    - **Analytics**: Pirsch for privacy-focused analytics
+    - **Support**: DevRev for customer support chat
+  </Tab>
+</Tabs>
+
+## User Interface Components
+
+The Console uses a rich set of UI components built on Radix UI primitives:
+
+- **Forms**: Advanced form builders with JSON schema support
+- **Tables**: Sortable, filterable data tables with pagination
+- **Dialogs & Modals**: Accessible dialog system
+- **Drag & Drop**: Sortable lists and kanban boards via dnd-kit
+- **Rich Text**: Markdown rendering with syntax highlighting
+- **PDF Viewer**: Embedded PDF viewing with react-pdf
+- **Maps**: Google Maps integration for location data
+- **Graphs**: Force-directed graphs for relationship visualization
+
+## Architecture Highlights
+
+### Route Structure
+
+The Console uses Next.js App Router with route groups:
+
+```
+(auth)/          - Authentication flows (login, signup, SSO, 2FA)
+(protected)/     - Authenticated routes
+  ├── dashboard          - Home dashboard
+  ├── controls           - Control management
+  ├── policies           - Policy management
+  ├── procedures         - Procedure management
+  ├── risks              - Risk management
+  ├── evidence           - Evidence repository
+  ├── programs           - Compliance programs
+  ├── automation/        - Assessment & task automation
+  ├── organization       - Organization selector
+  ├── organization-settings/
+  ├── user-settings/
+  ├── trust-center/      - Public trust center
+  └── registry/          - Standards registry
+```
+
+### Security Features
+
+<Warning>
+The Console implements multiple layers of security:
+- Session-based authentication with secure cookies
+- CSRF protection on all mutations
+- reCAPTCHA integration for bot prevention
+- Rate limiting on authentication endpoints
+- Content Security Policy headers
+</Warning>
+
+## Getting Started
+
+To start developing with the Console:
+
+<Steps>
+  <Step title="Start Development Server">
+    ```bash
+    task dev:console
+    ```
+    The console will be available at `http://localhost:3001`
+  </Step>
+  
+  <Step title="Configure Environment">
+    Set up required environment variables for authentication, API access, and integrations.
+    See the [Deployment Guide](/console/deployment) for details.
+  </Step>
+  
+  <Step title="Explore Features">
+    Log in and navigate through the dashboard, controls, policies, and other modules to understand the user workflows.
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/console/authentication">
+    Learn about SSO, 2FA, and WebAuthn implementation
+  </Card>
+  <Card title="Dashboard" icon="chart-line" href="/console/dashboard">
+    Understand dashboard features and data flows
+  </Card>
+  <Card title="Organizations" icon="users" href="/console/organizations">
+    Multi-organization setup and management
+  </Card>
+  <Card title="Deployment" icon="rocket" href="/console/deployment">
+    Deploy the Console to production
+  </Card>
+</CardGroup>

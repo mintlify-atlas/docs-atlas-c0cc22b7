@@ -1,0 +1,580 @@
+---
+title: 'Storybook Development'
+description: 'Develop and test UI components interactively with Storybook'
+icon: 'book'
+---
+
+## Overview
+
+The Openlane UI library uses [Storybook](https://storybook.js.org/) for component development, testing, and documentation. Storybook provides an isolated environment to build and test components independently from your application.
+
+## Running Storybook
+
+Storybook is set up in the `apps/storybook` directory of the monorepo.
+
+<Steps>
+  <Step title="Navigate to the monorepo root">
+    ```bash
+    cd /path/to/openlane-monorepo
+    ```
+  </Step>
+  
+  <Step title="Install dependencies">
+    ```bash
+    pnpm install
+    ```
+  </Step>
+  
+  <Step title="Start Storybook">
+    ```bash
+    cd apps/storybook
+    pnpm dev
+    ```
+    
+    Storybook will start on [http://localhost:6006](http://localhost:6006)
+  </Step>
+</Steps>
+
+## Storybook Configuration
+
+The Storybook setup uses Vite for fast builds and hot module replacement:
+
+```ts .storybook/main.ts
+import type { StorybookConfig } from '@storybook/react-vite'
+
+const config: StorybookConfig = {
+  stories: [
+    '../src/**/*.mdx',
+    {
+      directory: '../../../packages/ui/src',
+      files: '**/*.stories.*',
+    },
+  ],
+  addons: [
+    '@storybook/addon-links',
+    '@storybook/addon-a11y',
+    '@storybook/addon-themes',
+    '@storybook/addon-docs',
+  ],
+  framework: {
+    name: '@storybook/react-vite',
+    options: {
+      builder: {
+        viteConfigPath: 'vite.config.ts',
+      },
+    },
+  },
+  docs: {
+    defaultName: 'Documentation',
+  },
+}
+```
+
+### Installed Addons
+
+<CardGroup cols={2}>
+  <Card title="Accessibility" icon="universal-access">
+    `@storybook/addon-a11y` - Test components for accessibility issues
+  </Card>
+  
+  <Card title="Theming" icon="palette">
+    `@storybook/addon-themes` - Toggle between light and dark themes
+  </Card>
+  
+  <Card title="Documentation" icon="book">
+    `@storybook/addon-docs` - Auto-generate component documentation
+  </Card>
+  
+  <Card title="Links" icon="link">
+    `@storybook/addon-links` - Navigate between stories
+  </Card>
+</CardGroup>
+
+## Writing Stories
+
+Stories are written using the Component Story Format (CSF) 3.0:
+
+### Basic Story Example
+
+Here's how the Button component stories are structured:
+
+```tsx button.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import { ArrowRight, InfoIcon } from 'lucide-react'
+import { Button, buttonStyles } from './button'
+
+type ButtonVariants = keyof typeof buttonStyles.variants.variant
+type ButtonSizes = keyof typeof buttonStyles.variants.size
+
+const variants = Object.keys(buttonStyles.variants.variant) as ButtonVariants[]
+const sizes = Object.keys(buttonStyles.variants.size) as ButtonSizes[]
+
+const meta: Meta<typeof Button> = {
+  title: 'Actions/Button',
+  component: Button,
+  parameters: {
+    docs: {
+      description: {
+        component: 'Displays a button with multiple variants and sizes',
+      },
+    },
+  },
+  argTypes: {
+    variant: {
+      description: 'Defines the theme of the button',
+      control: 'select',
+      options: variants,
+    },
+    size: {
+      description: 'Defines the size of the button',
+      control: 'select',
+      options: sizes,
+    },
+    loading: { control: 'boolean' },
+    iconAnimated: { control: 'boolean' },
+  },
+} satisfies Meta<typeof Button>
+
+export default meta
+type Story = StoryObj<typeof meta>
+
+export const Primary: Story = {
+  args: {
+    children: 'Primary Button',
+    variant: 'primary',
+  },
+}
+
+export const Secondary: Story = {
+  args: {
+    children: 'Secondary Button',
+    variant: 'secondary',
+  },
+}
+
+export const WithIcon: Story = {
+  args: {
+    children: 'Continue',
+    variant: 'primary',
+    icon: <ArrowRight />,
+    iconAnimated: true,
+  },
+}
+
+export const Loading: Story = {
+  args: {
+    children: 'Loading...',
+    loading: true,
+  },
+}
+```
+
+### Story Organization
+
+Stories are organized by category:
+
+```
+Actions/
+├── Button
+├── AlertDialog
+├── Dialog
+└── ConfirmationDialog
+
+Form/
+├── Input
+├── Textarea
+├── Select
+├── Checkbox
+└── Switch
+
+Data Display/
+├── Table
+├── DataTable
+├── Badge
+└── Tag
+
+Feedback/
+├── Alert
+├── Toast
+└── Tooltip
+```
+
+## Interactive Controls
+
+Storybook provides interactive controls for component props:
+
+<Tabs>
+  <Tab title="Text Controls">
+    ```tsx
+    argTypes: {
+      children: {
+        control: 'text',
+        description: 'Button content',
+      },
+      placeholder: {
+        control: 'text',
+      },
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Select Controls">
+    ```tsx
+    argTypes: {
+      variant: {
+        control: 'select',
+        options: ['primary', 'secondary', 'destructive'],
+      },
+      size: {
+        control: 'select',
+        options: ['sm', 'md', 'lg'],
+      },
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Boolean Controls">
+    ```tsx
+    argTypes: {
+      loading: { control: 'boolean' },
+      disabled: { control: 'boolean' },
+      iconAnimated: { control: 'boolean' },
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Testing Components
+
+### Visual Testing
+
+Use Storybook to visually test components in isolation:
+
+1. **Test all variants**: Create stories for each variant
+2. **Test states**: Loading, disabled, error states
+3. **Test interactions**: Click handlers, form submissions
+4. **Test responsive behavior**: Resize viewport
+
+### Accessibility Testing
+
+The `@storybook/addon-a11y` addon automatically checks for accessibility issues:
+
+<Steps>
+  <Step title="Open any story">
+    Navigate to a component story in Storybook
+  </Step>
+  
+  <Step title="Check the Accessibility tab">
+    View accessibility violations and passes in the addon panel
+  </Step>
+  
+  <Step title="Fix violations">
+    Address any reported accessibility issues in your component
+  </Step>
+</Steps>
+
+## Dark Mode Testing
+
+Test components in both light and dark modes:
+
+1. Click the theme toggle in the Storybook toolbar
+2. Switch between light, dark, and side-by-side views
+3. Verify colors and contrast in both themes
+
+```tsx .storybook/preview.tsx
+import { withThemeByClassName } from '@storybook/addon-themes'
+
+export const decorators = [
+  withThemeByClassName({
+    themes: {
+      light: '',
+      dark: 'dark',
+    },
+    defaultTheme: 'light',
+  }),
+]
+```
+
+## Documentation
+
+Storybook auto-generates documentation from your stories:
+
+### Component Description
+
+```tsx
+const meta: Meta<typeof Button> = {
+  title: 'Actions/Button',
+  component: Button,
+  parameters: {
+    docs: {
+      description: {
+        component: 'A button component with multiple variants and states.',
+      },
+    },
+  },
+}
+```
+
+### Prop Documentation
+
+```tsx
+argTypes: {
+  variant: {
+    description: 'The visual style variant of the button',
+    table: {
+      type: { summary: 'primary | secondary | destructive' },
+      defaultValue: { summary: 'primary' },
+    },
+  },
+}
+```
+
+## Creating New Stories
+
+Follow these steps to create a new story:
+
+<Steps>
+  <Step title="Create the story file">
+    Create a `.stories.tsx` file next to your component:
+    
+    ```bash
+    packages/ui/src/my-component/my-component.stories.tsx
+    ```
+  </Step>
+  
+  <Step title="Define the meta object">
+    ```tsx
+    import type { Meta, StoryObj } from '@storybook/react-vite'
+    import { MyComponent } from './my-component'
+    
+    const meta: Meta<typeof MyComponent> = {
+      title: 'Category/MyComponent',
+      component: MyComponent,
+      argTypes: {
+        // Define controls here
+      },
+    } satisfies Meta<typeof MyComponent>
+    
+    export default meta
+    type Story = StoryObj<typeof meta>
+    ```
+  </Step>
+  
+  <Step title="Create story variants">
+    ```tsx
+    export const Default: Story = {
+      args: {
+        // Default props
+      },
+    }
+    
+    export const Variant1: Story = {
+      args: {
+        // Variant props
+      },
+    }
+    ```
+  </Step>
+  
+  <Step title="Test in Storybook">
+    Start Storybook and verify your new story appears:
+    
+    ```bash
+    pnpm dev
+    ```
+  </Step>
+</Steps>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Create Comprehensive Stories">
+    Cover all important variants and states:
+    
+    ```tsx
+    export const Default: Story = { ... }
+    export const Primary: Story = { ... }
+    export const Secondary: Story = { ... }
+    export const Loading: Story = { ... }
+    export const Disabled: Story = { ... }
+    export const WithIcon: Story = { ... }
+    export const LongText: Story = { ... }
+    ```
+  </Accordion>
+  
+  <Accordion title="Use Meaningful Story Names">
+    Story names should clearly describe what they demonstrate:
+    
+    ```tsx
+    // Good
+    export const WithIconAndLoadingState: Story = { ... }
+    
+    // Avoid
+    export const Story1: Story = { ... }
+    ```
+  </Accordion>
+  
+  <Accordion title="Document Component Behavior">
+    Add descriptions to help users understand the component:
+    
+    ```tsx
+    parameters: {
+      docs: {
+        description: {
+          component: 'This component is used for...',
+          story: 'This story demonstrates...',
+        },
+      },
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Test Edge Cases">
+    Create stories for edge cases:
+    
+    ```tsx
+    export const VeryLongText: Story = {
+      args: {
+        children: 'Very long text that might overflow...',
+      },
+    }
+    
+    export const EmptyState: Story = {
+      args: {
+        data: [],
+      },
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Building Storybook
+
+Build a static version of Storybook for deployment:
+
+```bash
+pnpm build-storybook
+```
+
+The static files will be generated in `storybook-static/`.
+
+## Available Scripts
+
+<CodeGroup>
+  ```bash Development
+  pnpm dev
+  # Starts Storybook dev server on port 6006
+  ```
+  
+  ```bash Build
+  pnpm build
+  # Builds static Storybook for production
+  ```
+  
+  ```bash Storybook CLI
+  pnpm storybook
+  # Alternative command to start Storybook
+  ```
+</CodeGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Stories not appearing">
+    Check that your story file matches the glob pattern in `main.ts`:
+    
+    ```ts
+    stories: [
+      {
+        directory: '../../../packages/ui/src',
+        files: '**/*.stories.*',  // Must end in .stories.tsx
+      },
+    ]
+    ```
+  </Accordion>
+  
+  <Accordion title="Styles not loading">
+    Ensure styles are imported in `.storybook/preview.tsx`:
+    
+    ```tsx
+    import '@repo/ui/styles.css'
+    ```
+  </Accordion>
+  
+  <Accordion title="Dark mode not working">
+    Verify the theme addon is configured:
+    
+    ```tsx
+    import { withThemeByClassName } from '@storybook/addon-themes'
+    
+    export const decorators = [
+      withThemeByClassName({
+        themes: { light: '', dark: 'dark' },
+        defaultTheme: 'light',
+      }),
+    ]
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Component Examples in Storybook
+
+Here are some example components you can explore in Storybook:
+
+<CardGroup cols={3}>
+  <Card title="Button" icon="hand-pointer">
+    10+ variants including primary, secondary, loading states
+  </Card>
+  
+  <Card title="Input" icon="input-text">
+    Variants with icons, prefixes, suffixes
+  </Card>
+  
+  <Card title="Select" icon="list">
+    Form select with multiple styles
+  </Card>
+  
+  <Card title="Dialog" icon="window">
+    Modal dialogs with different layouts
+  </Card>
+  
+  <Card title="Table" icon="table">
+    Sortable data tables
+  </Card>
+  
+  <Card title="Toast" icon="bell">
+    Toast notifications with variants
+  </Card>
+  
+  <Card title="Tabs" icon="folder">
+    Tabbed navigation
+  </Card>
+  
+  <Card title="Badge" icon="tag">
+    Status badges and labels
+  </Card>
+  
+  <Card title="Switch" icon="toggle-on">
+    Toggle switches
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Component Overview" icon="box" href="/components/overview">
+    View all available components
+  </Card>
+  
+  <Card title="Usage Guide" icon="code" href="/components/usage">
+    Learn how to use components
+  </Card>
+  
+  <Card title="Theming" icon="palette" href="/components/theming">
+    Customize component themes
+  </Card>
+  
+  <Card title="Installation" icon="download" href="/components/installation">
+    Setup the component library
+  </Card>
+</CardGroup>

@@ -1,0 +1,194 @@
+---
+title: Grid
+description: Responsive grid layout system with configurable rows, columns, and gaps
+---
+
+## Overview
+
+The Grid component provides a flexible CSS Grid-based layout system. It includes Grid, GridRow, and GridCell subcomponents for building responsive grid layouts.
+
+## Components
+
+### Grid
+
+Main wrapper component for grid layouts.
+
+<ParamField path="rows" type="1 | 2 | 3 | 4" default="1">
+  Number of rows in the grid
+</ParamField>
+
+<ParamField path="columns" type="1 | 2 | 3 | 4" default="1">
+  Number of columns in the grid
+</ParamField>
+
+<ParamField path="gap" type="0 | 1 | 2 | 4 | 8 | 9" default="4">
+  Gap spacing between grid items (in Tailwind spacing units)
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the grid wrapper
+</ParamField>
+
+<ParamField path="children" type="React.ReactNode" required>
+  Grid content (typically GridRow or GridCell components)
+</ParamField>
+
+### GridRow
+
+Row component for horizontal grid layouts.
+
+<ParamField path="columns" type="1 | 2 | 3 | 4" default="1">
+  Number of columns in this row (responsive: collapses to 1 column on small screens)
+</ParamField>
+
+<ParamField path="gap" type="0 | 1 | 2 | 4 | 8 | 9" default="4">
+  Gap spacing between cells in the row
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the row
+</ParamField>
+
+<ParamField path="children" type="React.ReactNode" required>
+  Row content (typically GridCell components)
+</ParamField>
+
+### GridCell
+
+Individual cell component for grid items.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the cell
+</ParamField>
+
+<ParamField path="children" type="React.ReactNode" required>
+  Cell content
+</ParamField>
+
+## Usage
+
+```tsx
+import { Grid, GridRow, GridCell } from '@repo/ui'
+
+export function Example() {
+  return (
+    <Grid rows={2} gap={8}>
+      <GridRow columns={3} gap={4}>
+        <GridCell>Cell 1</GridCell>
+        <GridCell>Cell 2</GridCell>
+        <GridCell>Cell 3</GridCell>
+      </GridRow>
+      <GridRow columns={2}>
+        <GridCell>Cell 4</GridCell>
+        <GridCell>Cell 5</GridCell>
+      </GridRow>
+    </Grid>
+  )
+}
+```
+
+## Examples
+
+### Simple 2-Column Layout
+
+```tsx
+<GridRow columns={2} gap={4}>
+  <GridCell>Left content</GridCell>
+  <GridCell>Right content</GridCell>
+</GridRow>
+```
+
+### 3-Column Card Grid
+
+```tsx
+<GridRow columns={3} gap={8}>
+  <GridCell>
+    <Card>Card 1</Card>
+  </GridCell>
+  <GridCell>
+    <Card>Card 2</Card>
+  </GridCell>
+  <GridCell>
+    <Card>Card 3</Card>
+  </GridCell>
+</GridRow>
+```
+
+### Multi-Row Layout
+
+```tsx
+<Grid rows={3} gap={9}>
+  <GridRow columns={4}>
+    <GridCell>Header 1</GridCell>
+    <GridCell>Header 2</GridCell>
+    <GridCell>Header 3</GridCell>
+    <GridCell>Header 4</GridCell>
+  </GridRow>
+  <GridRow columns={2}>
+    <GridCell>Main content</GridCell>
+    <GridCell>Sidebar</GridCell>
+  </GridRow>
+  <GridRow columns={1}>
+    <GridCell>Footer</GridCell>
+  </GridRow>
+</Grid>
+```
+
+### Dashboard Layout
+
+```tsx
+<Grid rows={2} gap={8}>
+  <GridRow columns={4} gap={4}>
+    <GridCell>
+      <StatCard title="Users" value="1,234" />
+    </GridCell>
+    <GridCell>
+      <StatCard title="Revenue" value="$12,345" />
+    </GridCell>
+    <GridCell>
+      <StatCard title="Orders" value="567" />
+    </GridCell>
+    <GridCell>
+      <StatCard title="Growth" value="12%" />
+    </GridCell>
+  </GridRow>
+  <GridRow columns={2} gap={8}>
+    <GridCell>
+      <Chart />
+    </GridCell>
+    <GridCell>
+      <RecentActivity />
+    </GridCell>
+  </GridRow>
+</Grid>
+```
+
+### No Gap Grid
+
+```tsx
+<GridRow columns={3} gap={0}>
+  <GridCell>Cell 1</GridCell>
+  <GridCell>Cell 2</GridCell>
+  <GridCell>Cell 3</GridCell>
+</GridRow>
+```
+
+## Responsive Behavior
+
+The Grid component is responsive by default:
+- Multi-column layouts (2, 3, or 4 columns) automatically collapse to 1 column on small screens
+- Single column layouts remain unchanged across all screen sizes
+- Gap spacing is maintained across all breakpoints
+
+```tsx
+{/* This will show 3 columns on desktop, 1 column on mobile */}
+<GridRow columns={3}>
+  <GridCell>Responsive cell 1</GridCell>
+  <GridCell>Responsive cell 2</GridCell>
+  <GridCell>Responsive cell 3</GridCell>
+</GridRow>
+```
+
+## Implementation
+
+Source: `/home/daytona/workspace/source/packages/ui/src/grid/grid.tsx`

@@ -1,0 +1,622 @@
+---
+title: 'Deployment Guide'
+description: 'Deploy the Openlane Console to production with proper configuration and environment variables'
+---
+
+## Overview
+
+This guide covers deploying the Openlane Console to production, including environment variable configuration, build optimization, and deployment best practices.
+
+<Warning>
+Never commit environment files (`.env`, `.env.local`, etc.) to version control. Use secure secret management services in production.
+</Warning>
+
+## Prerequisites
+
+Before deploying, ensure you have:
+
+- **Node.js**: Version 20 or later
+- **Package Manager**: pnpm (recommended) or npm
+- **Database**: PostgreSQL instance for backend API
+- **Object Storage**: Cloudflare R2 or S3-compatible storage for file uploads
+- **Domain**: Custom domain with SSL certificate
+- **API Endpoint**: Backend GraphQL API deployed and accessible
+
+## Environment Variables
+
+The Console requires various environment variables for different features. These are defined in `/turbo.json` for build-time validation.
+
+### Core Configuration
+
+```bash
+# Node environment
+NODE_ENV=production
+
+# API Configuration
+API_REST_URL=https://api.yourdomain.com
+NEXT_PUBLIC_OPENLANE_URL=https://console.yourdomain.com
+NEXT_PUBLIC_API_GQL_URL=https://api.yourdomain.com/graphql
+```
+
+<Note>
+Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Keep sensitive values in server-side variables only.
+</Note>
+
+### Authentication Settings
+
+<Tabs>
+  <Tab title="OAuth Providers">
+    ```bash
+    # GitHub OAuth
+    AUTH_GITHUB_ID=your_github_client_id
+    AUTH_GITHUB_SECRET=your_github_client_secret
+    
+    # Google OAuth
+    AUTH_GOOGLE_ID=your_google_client_id.apps.googleusercontent.com
+    AUTH_GOOGLE_SECRET=your_google_client_secret
+    ```
+    
+    **Setup Instructions**:
+    
+    <Steps>
+      <Step title="GitHub OAuth App">
+        1. Go to GitHub Developer Settings
+        2. Create new OAuth App
+        3. Set Authorization callback URL:
+           ```
+           https://console.yourdomain.com/api/auth/callback/github
+           ```
+        4. Copy Client ID and Client Secret
+      </Step>
+      
+      <Step title="Google OAuth Client">
+        1. Go to Google Cloud Console
+        2. Create OAuth 2.0 Client ID
+        3. Add authorized redirect URI:
+           ```
+           https://console.yourdomain.com/api/auth/callback/google
+           ```
+        4. Copy Client ID and Client Secret
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="Session Configuration">
+    ```bash
+    # Session cookie name (optional, defaults to next-auth.session-token)
+    SESSION_COOKIE_NAME=openlane-session
+    
+    # Cookie domain for subdomain sharing (optional)
+    SESSION_COOKIE_DOMAIN=.yourdomain.com
+    
+    # Session max age in seconds (optional, defaults to 30 days)
+    SESSION_NEXAUTH_MAX_AGE=2592000
+    ```
+    
+    <Accordion title="Cookie Domain Configuration">
+      Set `SESSION_COOKIE_DOMAIN` to share sessions across subdomains:
+      
+      - `SESSION_COOKIE_DOMAIN=.yourdomain.com` - Shares cookies with:
+        - console.yourdomain.com
+        - api.yourdomain.com
+        - trust.yourdomain.com
+      
+      - Leave unset for single domain deployment
+    </Accordion>
+  </Tab>
+  
+  <Tab title="Domain Restrictions">
+    ```bash
+    # Restrict signups to specific email domains (optional)
+    NEXT_PUBLIC_ALLOWED_LOGIN_DOMAINS=yourcompany.com,partner.com
+    ```
+    
+    Comma-separated list of allowed email domains. If set, users can only sign up with emails from these domains.
+  </Tab>
+  
+  <Tab title="reCAPTCHA">
+    ```bash
+    # Google reCAPTCHA v3 secret key (optional but recommended)
+    RECAPTCHA_SECRET_KEY=your_recaptcha_v3_secret_key
+    ```
+    
+    **Setup**:
+    1. Create reCAPTCHA v3 site at https://www.google.com/recaptcha/admin
+    2. Add your domain
+    3. Copy the secret key
+    4. Add the site key to your app's HTML
+  </Tab>
+</Tabs>
+
+### Integration Settings
+
+<Tabs>
+  <Tab title="Billing (Stripe)">
+    ```bash
+    # Stripe secret key for billing integration
+    STRIPE_SECRET_KEY=sk_live_...
+    ```
+    
+    Required for:
+    - Subscription management
+    - Invoice generation
+    - Payment processing
+    - Usage tracking
+    
+    <Warning>
+    Use Stripe **test mode** keys for development and **live mode** keys for production.
+    </Warning>
+  </Tab>
+  
+  <Tab title="Customer Support (DevRev)">
+    ```bash
+    # DevRev authentication token for customer support chat
+    DEVREV_AAT=your_devrev_app_access_token
+    ```
+    
+    Enables in-app customer support chat widget.
+  </Tab>
+  
+  <Tab title="Analytics (Pirsch)">
+    ```bash
+    # Pirsch Analytics for trust center (privacy-focused)
+    PIRSCH_SECRET=your_pirsch_secret
+    PIRSCH_CLIENT_ID=your_pirsch_client_id
+    ```
+    
+    Used for privacy-friendly analytics on public trust center pages.
+  </Tab>
+  
+  <Tab title="API Tokens">
+    ```bash
+    # Write token for API operations (e.g., subscriber management)
+    OPENLANE_API_WRITE_TOKEN=your_write_token
+    ```
+    
+    Used for server-side API operations that require write access.
+  </Tab>
+</Tabs>
+
+### AI/ML Settings (Optional)
+
+<Tabs>
+  <Tab title="Google Vertex AI">
+    ```bash
+    # Enable AI-powered suggestions
+    NEXT_PUBLIC_AI_SUGGESTIONS_ENABLED=true
+    
+    # Google AI Configuration
+    GOOGLE_AI_PROJECT_ID=your-gcp-project-id
+    GOOGLE_AI_REGION=us-central1
+    GOOGLE_AI_MODEL_NAME=gemini-pro
+    GOOGLE_GENERATIVE_AI_API_KEY=your-api-key
+    
+    # Service account for Vertex AI (base64 encoded JSON)
+    GOOGLE_SERVICE_ACCOUNT_KEY_B64=base64_encoded_service_account_json
+    
+    # RAG Corpus for enhanced context
+    GOOGLE_RAG_CORPUS_ID=your-corpus-id
+    
+    # GCS bucket for AI logs
+    GCS_LOG_BUCKET=your-logs-bucket
+    ```
+    
+    **Setup Service Account**:
+    ```bash
+    # Encode service account JSON to base64
+    cat service-account.json | base64 -w 0 > service-account-b64.txt
+    ```
+  </Tab>
+  
+  <Tab title="Amazon Bedrock">
+    ```bash
+    # AWS region for Bedrock (optional, for development/testing)
+    AWS_REGION=us-east-1
+    ```
+    
+    The Console includes Amazon Bedrock SDK (`@ai-sdk/amazon-bedrock`) but it's primarily used for development/testing. Production uses Google Vertex AI.
+  </Tab>
+</Tabs>
+
+### Feature Flags
+
+```bash
+# Enable subscription plan features (optional)
+NEXT_PUBLIC_ENABLE_PLAN=true
+
+# Google Maps API for location features (optional)
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+
+# Custom domain CNAME value for trust center (optional)
+NEXT_PUBLIC_CUSTOMDOMAIN_CNAME=trust.yourdomain.com.cdn.cloudflare.net
+```
+
+## Build Configuration
+
+The Console uses Next.js with custom build settings in `next.config.mjs`:
+
+```javascript
+const nextConfig = {
+  reactStrictMode: true,
+  
+  // Transpile monorepo packages
+  transpilePackages: [
+    '@repo/dally',
+    '@repo/ui',
+    '@repo/codegen',
+    'survey-core',
+    'survey-react-ui'
+  ],
+  
+  // Optimize for production
+  experimental: {
+    webpackMemoryOptimizations: false,
+  },
+  
+  // Redirects
+  async redirects() {
+    return [
+      {
+        source: '/tasks',
+        destination: '/automation/tasks',
+        permanent: true,
+      },
+    ]
+  },
+  
+  // Image optimization for Cloudflare R2
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.r2.cloudflarestorage.com',
+        pathname: '/**',
+      },
+    ],
+  },
+}
+```
+
+## Build and Deploy
+
+### Local Build
+
+<Steps>
+  <Step title="Install Dependencies">
+    ```bash
+    pnpm install
+    ```
+  </Step>
+  
+  <Step title="Build Application">
+    ```bash
+    # From monorepo root
+    pnpm --filter console build
+    
+    # Or using task runner
+    task build:console
+    ```
+    
+    This creates an optimized production build in `.next/` directory.
+  </Step>
+  
+  <Step title="Test Production Build">
+    ```bash
+    pnpm --filter console start
+    
+    # Or
+    task start:console
+    ```
+    
+    Runs the production server on port 3001.
+  </Step>
+</Steps>
+
+### Docker Deployment
+
+Create a `Dockerfile` for containerized deployment:
+
+```dockerfile
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+COPY apps/console/package.json ./apps/console/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Build console app
+ENV NEXT_TELEMETRY_DISABLED 1
+RUN pnpm --filter console build
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/apps/console/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/console/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/console/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3001
+
+ENV PORT 3001
+
+CMD ["node", "server.js"]
+```
+
+**Build and run**:
+
+```bash
+docker build -t openlane-console .
+docker run -p 3001:3001 --env-file .env.production openlane-console
+```
+
+### Vercel Deployment
+
+<Steps>
+  <Step title="Install Vercel CLI">
+    ```bash
+    pnpm install -g vercel
+    ```
+  </Step>
+  
+  <Step title="Configure Project">
+    Create `vercel.json` in console directory:
+    ```json
+    {
+      "buildCommand": "pnpm build",
+      "devCommand": "pnpm dev",
+      "installCommand": "pnpm install",
+      "framework": "nextjs",
+      "outputDirectory": ".next"
+    }
+    ```
+  </Step>
+  
+  <Step title="Set Environment Variables">
+    In Vercel dashboard:
+    1. Go to Project Settings → Environment Variables
+    2. Add all required environment variables
+    3. Set appropriate environments (Production, Preview, Development)
+  </Step>
+  
+  <Step title="Deploy">
+    ```bash
+    vercel --prod
+    ```
+  </Step>
+</Steps>
+
+### Platform-Specific Deployments
+
+<Tabs>
+  <Tab title="AWS (ECS/Fargate)">
+    1. Build Docker image
+    2. Push to ECR
+    3. Create ECS task definition
+    4. Configure ALB with SSL certificate
+    5. Set environment variables in task definition
+    6. Deploy ECS service
+  </Tab>
+  
+  <Tab title="Google Cloud (Cloud Run)">
+    ```bash
+    # Build and push to GCR
+    gcloud builds submit --tag gcr.io/PROJECT_ID/openlane-console
+    
+    # Deploy to Cloud Run
+    gcloud run deploy openlane-console \
+      --image gcr.io/PROJECT_ID/openlane-console \
+      --platform managed \
+      --region us-central1 \
+      --allow-unauthenticated \
+      --set-env-vars="$(cat .env.production)"
+    ```
+  </Tab>
+  
+  <Tab title="Azure (App Service)">
+    1. Create App Service with Node.js runtime
+    2. Configure deployment from GitHub or container registry
+    3. Set environment variables in Application Settings
+    4. Configure custom domain and SSL
+    5. Enable Always On for production
+  </Tab>
+  
+  <Tab title="Self-Hosted">
+    Using PM2 for process management:
+    
+    ```bash
+    # Install PM2
+    npm install -g pm2
+    
+    # Start application
+    pm2 start npm --name "openlane-console" -- start
+    
+    # Configure startup script
+    pm2 startup
+    pm2 save
+    
+    # Monitor
+    pm2 monit
+    ```
+    
+    Use Nginx as reverse proxy:
+    ```nginx
+    server {
+      listen 443 ssl http2;
+      server_name console.yourdomain.com;
+      
+      ssl_certificate /path/to/cert.pem;
+      ssl_certificate_key /path/to/key.pem;
+      
+      location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Production Checklist
+
+<AccordionGroup>
+  <Accordion title="Security">
+    - [ ] All environment variables secured (use secret manager)
+    - [ ] HTTPS enabled with valid SSL certificate
+    - [ ] reCAPTCHA configured for login pages
+    - [ ] OAuth callback URLs whitelisted
+    - [ ] CORS configured properly in API
+    - [ ] Rate limiting enabled on auth endpoints
+    - [ ] Session secrets rotated
+    - [ ] CSP headers configured
+  </Accordion>
+  
+  <Accordion title="Performance">
+    - [ ] Next.js production build optimized
+    - [ ] Image optimization configured
+    - [ ] CDN configured for static assets
+    - [ ] Database connection pooling enabled
+    - [ ] Redis cache for session storage
+    - [ ] Monitoring and APM configured
+    - [ ] Load balancer health checks configured
+  </Accordion>
+  
+  <Accordion title="Reliability">
+    - [ ] Database backups automated
+    - [ ] Application logs aggregated
+    - [ ] Error tracking configured (Sentry, etc.)
+    - [ ] Uptime monitoring enabled
+    - [ ] Auto-scaling policies configured
+    - [ ] Disaster recovery plan documented
+    - [ ] Fallback mechanisms tested
+  </Accordion>
+  
+  <Accordion title="Compliance">
+    - [ ] Data encryption at rest and in transit
+    - [ ] Audit logging enabled
+    - [ ] Data retention policies configured
+    - [ ] Privacy policy and ToS linked
+    - [ ] GDPR compliance measures (if applicable)
+    - [ ] SOC 2 controls implemented (if applicable)
+  </Accordion>
+</AccordionGroup>
+
+## Monitoring and Logging
+
+### Application Logs
+
+```bash
+# View logs in production
+pm2 logs openlane-console
+
+# Docker logs
+docker logs -f container_id
+
+# Cloud platform logs
+vercel logs
+gcloud logging read
+aws logs tail
+```
+
+### Health Checks
+
+Implement health check endpoint:
+
+```typescript
+// app/api/health/route.ts
+export async function GET() {
+  return Response.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version,
+  })
+}
+```
+
+### Metrics
+
+Track key metrics:
+- Response times
+- Error rates
+- Active sessions
+- API latency
+- Database query performance
+- Cache hit rates
+
+## Troubleshooting
+
+<Accordion title="Build Failures">
+**Problem**: Build fails with TypeScript errors
+
+**Solutions**:
+1. Ensure all dependencies are installed: `pnpm install`
+2. Clear build cache: `rm -rf .next`
+3. Check TypeScript version compatibility
+4. Verify `@repo/codegen` is built first
+</Accordion>
+
+<Accordion title="Environment Variable Issues">
+**Problem**: Features not working due to missing env vars
+
+**Solutions**:
+1. Check `turbo.json` for required variables
+2. Verify variables are set in deployment platform
+3. Restart application after updating env vars
+4. Check browser console for `NEXT_PUBLIC_` variable issues
+</Accordion>
+
+<Accordion title="Authentication Errors">
+**Problem**: OAuth or SSO not working
+
+**Solutions**:
+1. Verify callback URLs match exactly
+2. Check OAuth credentials are for correct environment
+3. Ensure HTTPS is enabled in production
+4. Verify cookie domain settings
+5. Check NextAuth configuration
+</Accordion>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/console/authentication">
+    Configure auth providers and SSO
+  </Card>
+  <Card title="Monitoring" icon="chart-line" href="/operations/monitoring">
+    Set up monitoring and alerting
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference">
+    Integrate with Console APIs
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/support/troubleshooting">
+    Common issues and solutions
+  </Card>
+</CardGroup>

@@ -1,0 +1,521 @@
+---
+title: '@repo/ui'
+description: 'Shared UI component library for Openlane applications'
+---
+
+## Overview
+
+The `@repo/ui` package is a comprehensive React component library built with Radix UI primitives, Tailwind CSS, and modern UI patterns. It provides type-safe, accessible, and customizable components for building Openlane applications.
+
+## Installation
+
+```bash
+pnpm add @repo/ui
+```
+
+## Key Features
+
+- **70+ UI Components** - Buttons, forms, tables, dialogs, and more
+- **Radix UI Primitives** - Accessible, unstyled components
+- **Tailwind CSS** - Utility-first styling with custom theme
+- **TypeScript** - Full type safety
+- **Plate.js Editor** - Rich text editing capabilities
+- **Data Tables** - Advanced tables with sorting, filtering, pagination
+- **Form Components** - React Hook Form integration
+
+## Component Categories
+
+### Form Components
+
+```tsx
+import { Button } from '@repo/ui/button'
+import { Input } from '@repo/ui/input'
+import { Form, FormField, FormItem, FormLabel, FormControl } from '@repo/ui/form'
+import { Select } from '@repo/ui/select'
+import { Checkbox } from '@repo/ui/checkbox'
+import { RadioGroup } from '@repo/ui/radio-group'
+import { Textarea } from '@repo/ui/textarea'
+import { Switch } from '@repo/ui/switch'
+```
+
+### Layout Components
+
+```tsx
+import { Card } from '@repo/ui/cardpanel'
+import { Panel } from '@repo/ui/panel'
+import { Grid } from '@repo/ui/grid'
+import { Separator } from '@repo/ui/separator'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@repo/ui/tabs'
+import { Sheet } from '@repo/ui/sheet'
+```
+
+### Feedback Components
+
+```tsx
+import { Alert, AlertTitle, AlertDescription } from '@repo/ui/alert'
+import { Dialog } from '@repo/ui/dialog'
+import { AlertDialog } from '@repo/ui/alert-dialog'
+import { ConfirmationDialog } from '@repo/ui/confirmation-dialog'
+import { Toast, useToast } from '@repo/ui/use-toast'
+import { ProgressCircle } from '@repo/ui/progress-circle'
+```
+
+### Data Display
+
+```tsx
+import { DataTable } from '@repo/ui/data-table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@repo/ui/table'
+import { Badge } from '@repo/ui/badge'
+import { Avatar, AvatarImage, AvatarFallback } from '@repo/ui/avatar'
+import { Tag } from '@repo/ui/tag'
+```
+
+## Usage Examples
+
+### Button Component
+
+```tsx
+import { Button } from '@repo/ui/button'
+import { PlusIcon } from 'lucide-react'
+
+function Example() {
+  return (
+    <>
+      <Button variant="primary" size="md">Primary Button</Button>
+      <Button variant="secondary" size="md">Secondary</Button>
+      <Button variant="outline" size="sm">Outline</Button>
+      <Button variant="destructive" size="md">Delete</Button>
+      
+      {/* With icon */}
+      <Button 
+        variant="primary" 
+        icon={<PlusIcon />} 
+        iconPosition="left"
+      >
+        Add Item
+      </Button>
+      
+      {/* Loading state */}
+      <Button loading={true}>Saving...</Button>
+      
+      {/* With tooltip */}
+      <Button 
+        variant="primary"
+        descriptiveTooltipText="Click to create a new item"
+      >
+        Create
+      </Button>
+    </>
+  )
+}
+```
+
+### Form with Validation
+
+```tsx
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { 
+  Form, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormControl, 
+  FormMessage 
+} from '@repo/ui/form'
+import { Input } from '@repo/ui/input'
+import { Button } from '@repo/ui/button'
+
+const formSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+})
+
+function UserForm() {
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: { name: '', email: '' }
+  })
+
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
+    console.log(data)
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input placeholder="John Doe" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="john@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <Button type="submit" variant="primary">Submit</Button>
+      </form>
+    </Form>
+  )
+}
+```
+
+### Data Table
+
+```tsx
+import { DataTable, getInitialSortConditions } from '@repo/ui/data-table'
+import { OrderDirection } from '@repo/codegen/src/schema'
+import { ColumnDef } from '@tanstack/react-table'
+
+type User = {
+  id: string
+  name: string
+  email: string
+  role: string
+}
+
+const columns: ColumnDef<User>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+  },
+  {
+    accessorKey: 'email',
+    header: 'Email',
+  },
+  {
+    accessorKey: 'role',
+    header: 'Role',
+  },
+]
+
+function UsersTable({ data }: { data: User[] }) {
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 10,
+    query: { first: 10 }
+  })
+
+  const sortFields = [
+    { key: 'name', label: 'Name' },
+    { key: 'email', label: 'Email' },
+  ]
+
+  const defaultSorting = [
+    { field: 'name', direction: OrderDirection.ASC }
+  ]
+
+  return (
+    <DataTable
+      columns={columns}
+      data={data}
+      tableKey="users-table"
+      sortFields={sortFields}
+      defaultSorting={defaultSorting}
+      pagination={pagination}
+      onPaginationChange={setPagination}
+      showFilter
+      showVisibility
+    />
+  )
+}
+```
+
+### Toast Notifications
+
+```tsx
+import { useToast } from '@repo/ui/use-toast'
+import { Toaster } from '@repo/ui/toaster'
+import { Button } from '@repo/ui/button'
+
+function App() {
+  return (
+    <>
+      <NotificationExample />
+      <Toaster />
+    </>
+  )
+}
+
+function NotificationExample() {
+  const { toast } = useToast()
+
+  return (
+    <Button
+      onClick={() => {
+        toast({
+          title: 'Success!',
+          description: 'Your changes have been saved.',
+          variant: 'default',
+        })
+      }}
+    >
+      Show Toast
+    </Button>
+  )
+}
+```
+
+### Dialog Component
+
+```tsx
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from '@repo/ui/dialog'
+import { Button } from '@repo/ui/button'
+
+function DialogExample() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline">Open Dialog</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Are you sure?</DialogTitle>
+          <DialogDescription>
+            This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline">Cancel</Button>
+          <Button variant="destructive">Delete</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+### Select Component
+
+```tsx
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@repo/ui/select'
+
+function SelectExample() {
+  return (
+    <Select onValueChange={(value) => console.log(value)}>
+      <SelectTrigger className="w-[180px]">
+        <SelectValue placeholder="Select a role" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="admin">Admin</SelectItem>
+        <SelectItem value="member">Member</SelectItem>
+        <SelectItem value="viewer">Viewer</SelectItem>
+      </SelectContent>
+    </Select>
+  )
+}
+```
+
+## Advanced Components
+
+### Pagination
+
+```tsx
+import Pagination from '@repo/ui/pagination'
+import { TPagination } from '@repo/ui/pagination-types'
+
+function PaginatedList() {
+  const [pagination, setPagination] = useState<TPagination>({
+    page: 1,
+    pageSize: 20,
+    query: { first: 20 }
+  })
+
+  return (
+    <Pagination
+      currentPage={pagination.page}
+      totalPages={10}
+      pageSize={pagination.pageSize}
+      onPageChange={(page) => setPagination({ ...pagination, page })}
+      onPageSizeChange={(size) => setPagination({ ...pagination, pageSize: size })}
+    />
+  )
+}
+```
+
+### Charts
+
+```tsx
+import { LineChart } from '@repo/ui/line-chart'
+import { DonutChart } from '@repo/ui/donut-chart'
+
+function Analytics() {
+  const data = [
+    { date: '2024-01', value: 100 },
+    { date: '2024-02', value: 150 },
+    { date: '2024-03', value: 200 },
+  ]
+
+  return (
+    <div>
+      <LineChart data={data} xKey="date" yKey="value" />
+      <DonutChart data={data} />
+    </div>
+  )
+}
+```
+
+### Infinite Scroll
+
+```tsx
+import { InfiniteScroll } from '@repo/ui/infinite-scroll'
+
+function InfiniteList({ items }: { items: any[] }) {
+  const loadMore = () => {
+    // Load more items
+  }
+
+  return (
+    <InfiniteScroll
+      hasMore={true}
+      loadMore={loadMore}
+      loading={false}
+    >
+      {items.map((item) => (
+        <div key={item.id}>{item.name}</div>
+      ))}
+    </InfiniteScroll>
+  )
+}
+```
+
+## Utilities
+
+### Class Name Utilities
+
+```tsx
+import { cn } from '@repo/ui/lib/utils'
+
+function Component({ className }: { className?: string }) {
+  return (
+    <div className={cn('base-classes', 'conditional-class', className)}>
+      Content
+    </div>
+  )
+}
+```
+
+### Window Resize Hook
+
+```tsx
+import { useWindowResize } from '@repo/ui/lib/windowResize'
+
+function ResponsiveComponent() {
+  const { width, height } = useWindowResize()
+  
+  return <div>Window: {width}x{height}</div>
+}
+```
+
+## Styling
+
+Import the base styles in your application:
+
+```tsx
+import '@repo/ui/styles.css'
+```
+
+### PostCSS Configuration
+
+Import the PostCSS config:
+
+```js
+import config from '@repo/ui/postcss.config'
+
+export default config
+```
+
+## Icons
+
+```tsx
+import GoogleIcon from '@repo/ui/icons/google'
+import GitHubIcon from '@repo/ui/icons/github'
+import ChevronDownIcon from '@repo/ui/icons/chevron-down'
+
+function SocialLogin() {
+  return (
+    <>
+      <Button icon={<GoogleIcon />}>Sign in with Google</Button>
+      <Button icon={<GitHubIcon />}>Sign in with GitHub</Button>
+    </>
+  )
+}
+```
+
+## Best Practices
+
+1. **Import components individually** - Reduces bundle size
+2. **Use TypeScript types** - All components are fully typed
+3. **Leverage Radix UI primitives** - Built-in accessibility
+4. **Customize with Tailwind** - Use utility classes for customization
+5. **Follow component patterns** - Use controlled components where appropriate
+6. **Use form validation** - Integrate with react-hook-form and zod
+
+## Component Variants
+
+Many components support variants for different use cases:
+
+```tsx
+// Button variants
+<Button variant="primary" />     // Primary action
+<Button variant="secondary" />   // Secondary action
+<Button variant="outline" />     // Outlined style
+<Button variant="ghost" />       // Minimal style
+<Button variant="destructive" /> // Destructive action
+<Button variant="success" />     // Success state
+
+// Button sizes
+<Button size="xs" />
+<Button size="sm" />
+<Button size="md" />
+<Button size="lg" />
+<Button size="xl" />
+```
+
+## Accessibility
+
+All components are built with accessibility in mind:
+
+- ARIA attributes
+- Keyboard navigation
+- Focus management
+- Screen reader support
+- Semantic HTML
+
+## Related Packages
+
+- [@repo/codegen](/api/codegen) - GraphQL code generation
+- [@repo/dally](/api/dally) - Authentication and configuration

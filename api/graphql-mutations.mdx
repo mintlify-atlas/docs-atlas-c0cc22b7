@@ -1,0 +1,532 @@
+---
+title: GraphQL Mutations
+description: Mutation patterns and examples for modifying data in the Openlane API
+---
+
+Mutations are used to create, update, and delete data in the Openlane GraphQL API. This guide covers common mutation patterns and real examples from the codebase.
+
+## Mutation Structure
+
+Mutations are defined using the `gql` template tag, similar to queries:
+
+```typescript
+import { gql } from 'graphql-request'
+
+export const UPDATE_USER = gql`
+  mutation UpdateUser(
+    $updateUserId: ID!
+    $input: UpdateUserInput!
+    $avatarFile: Upload
+  ) {
+    updateUser(
+      id: $updateUserId
+      input: $input
+      avatarFile: $avatarFile
+    ) {
+      user {
+        id
+        avatarFile {
+          presignedURL
+        }
+      }
+    }
+  }
+`
+```
+
+## Common Mutation Patterns
+
+### Create Mutation
+
+Create a new resource:
+
+```typescript packages/codegen/query/organization.ts
+export const CREATE_ORGANIZATION = gql`
+  mutation CreateOrganization($input: CreateOrganizationInput!) {
+    createOrganization(input: $input) {
+      organization {
+        id
+      }
+    }
+  }
+`
+```
+
+**Generated Hook:**
+
+```typescript
+const { mutateAsync: createOrg, isPending } = useCreateOrganization()
+
+await createOrg({
+  input: {
+    name: 'acme-corp',
+    displayName: 'Acme Corporation'
+  }
+})
+```
+
+### Update Mutation
+
+Update an existing resource:
+
+```typescript packages/codegen/query/user.ts
+export const UPDATE_USER = gql`
+  mutation UpdateUser(
+    $updateUserId: ID!
+    $input: UpdateUserInput!
+    $avatarFile: Upload
+  ) {
+    updateUser(
+      id: $updateUserId
+      input: $input
+      avatarFile: $avatarFile
+    ) {
+      user {
+        id
+        avatarFile {
+          presignedURL
+        }
+      }
+    }
+  }
+`
+```
+
+**Usage:**
+
+```typescript
+const { mutateAsync: updateUser, isPending } = useUpdateUser()
+
+await updateUser({
+  updateUserId: userId,
+  input: {
+    firstName: 'John',
+    lastName: 'Doe',
+    displayName: 'John Doe'
+  }
+})
+```
+
+### Delete Mutation
+
+Delete a resource:
+
+```typescript packages/codegen/query/organization.ts
+export const DELETE_ORGANIZATION = gql`
+  mutation DeleteOrganization($deleteOrganizationId: ID!) {
+    deleteOrganization(id: $deleteOrganizationId) {
+      deletedID
+    }
+  }
+`
+```
+
+**Usage:**
+
+```typescript
+const { mutateAsync: deleteOrg } = useDeleteOrganization()
+
+const result = await deleteOrg({
+  deleteOrganizationId: orgId
+})
+
+console.log('Deleted:', result.data.deleteOrganization.deletedID)
+```
+
+### Bulk Create Mutation
+
+Create multiple resources at once:
+
+```typescript packages/codegen/query/organization.ts
+export const CREATE_BULK_INVITE = gql`
+  mutation CreateBulkInvite($input: [CreateInviteInput!]) {
+    createBulkInvite(input: $input) {
+      invites {
+        id
+      }
+    }
+  }
+`
+```
+
+**Usage:**
+
+```typescript
+const { mutateAsync: createInvites } = useCreateBulkInvite()
+
+await createInvites({
+  input: [
+    { recipient: 'user1@example.com', role: 'MEMBER' },
+    { recipient: 'user2@example.com', role: 'ADMIN' }
+  ]
+})
+```
+
+### Update Nested Resource
+
+Update a nested resource like settings:
+
+```typescript packages/codegen/query/user.ts
+export const UPDATE_USER_SETTING = gql`
+  mutation UpdateUserSetting(
+    $updateUserSettingId: ID!
+    $input: UpdateUserSettingInput!
+  ) {
+    updateUserSetting(
+      id: $updateUserSettingId
+      input: $input
+    ) {
+      userSetting {
+        id
+      }
+    }
+  }
+`
+```
+
+**Usage:**
+
+```typescript
+const { mutateAsync: updateSettings } = useUpdateUserSetting()
+
+await updateSettings({
+  updateUserSettingId: settingId,
+  input: {
+    status: 'ACTIVE',
+    tags: ['premium', 'verified']
+  }
+})
+```
+
+### Transfer Ownership Mutation
+
+Special mutation for transferring resource ownership:
+
+```typescript packages/codegen/query/organization.ts
+export const TRANSFER_ORGANIZATION_OWNERSHIP = gql`
+  mutation TransferOrganizationOwnership($newOwnerEmail: String!) {
+    transferOrganizationOwnership(newOwnerEmail: $newOwnerEmail) {
+      invitationSent
+    }
+  }
+`
+```
+
+**Usage:**
+
+```typescript
+const { mutateAsync: transferOwnership } = useTransferOrganizationOwnership()
+
+const result = await transferOwnership({
+  newOwnerEmail: 'newowner@example.com'
+})
+
+if (result.data.transferOrganizationOwnership.invitationSent) {
+  toast.success('Ownership transfer invitation sent')
+}
+```
+
+## Using Mutations in Components
+
+Real example from the codebase:
+
+```typescript apps/console/src/components/pages/protected/profile/user-settings/profile-name-form.tsx
+import { useGetCurrentUser, useUpdateUser } from '@/lib/graphql-hooks/user'
+import { useNotification } from '@/hooks/useNotification'
+import { parseErrorMessage } from '@/utils/graphQlErrorMatcher'
+
+const ProfileNameForm = () => {
+  const [isSuccess, setIsSuccess] = useState(false)
+  const { isPending: isSubmitting, mutateAsync: updateUserName } = useUpdateUser()
+  const { successNotification, errorNotification } = useNotification()
+
+  const { data: sessionData } = useSession()
+  const userId = sessionData?.user.userId
+
+  const onSubmit = async (data) => {
+    try {
+      await updateUserName({
+        updateUserId: userId,
+        input: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          displayName: data.displayName,
+          email: data.email,
+        },
+      })
+      setIsSuccess(true)
+      successNotification({ title: 'Profile updated successfully!' })
+    } catch (error) {
+      const errorMessage = parseErrorMessage(error)
+      errorNotification({
+        title: 'Error',
+        description: errorMessage,
+      })
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {/* form fields */}
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Saving...' : 'Save'}
+      </button>
+    </form>
+  )
+}
+```
+
+## Mutation Hook Options
+
+Mutation hooks return several useful properties:
+
+```typescript
+const {
+  mutate,           // Trigger mutation (no await)
+  mutateAsync,      // Trigger mutation (returns promise)
+  isPending,        // Is mutation in progress
+  isError,          // Did mutation fail
+  isSuccess,        // Did mutation succeed
+  error,            // Error object if failed
+  data,             // Response data
+  reset             // Reset mutation state
+} = useUpdateUser()
+```
+
+### Synchronous Mutation
+
+```typescript
+const { mutate, isPending } = useUpdateUser()
+
+mutate(
+  { updateUserId: userId, input: { firstName: 'John' } },
+  {
+    onSuccess: (data) => {
+      console.log('Success:', data)
+    },
+    onError: (error) => {
+      console.error('Error:', error)
+    }
+  }
+)
+```
+
+### Asynchronous Mutation
+
+```typescript
+const { mutateAsync } = useUpdateUser()
+
+try {
+  const result = await mutateAsync({
+    updateUserId: userId,
+    input: { firstName: 'John' }
+  })
+  console.log('Success:', result)
+} catch (error) {
+  console.error('Error:', error)
+}
+```
+
+## File Upload Mutations
+
+Some mutations support file uploads:
+
+```typescript apps/console/src/lib/graphql-hooks/user.ts
+export const useUpdateUserAvatar = () => {
+  const { queryClient } = useGraphQLClient()
+
+  return useMutation({
+    mutationFn: (payload: UpdateUserMutationVariables) =>
+      fetchGraphQLWithUpload({
+        query: UPDATE_USER,
+        variables: payload
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+    },
+  })
+}
+```
+
+**Usage:**
+
+```typescript
+const { mutateAsync: updateAvatar } = useUpdateUserAvatar()
+
+const file = document.querySelector('input[type="file"]').files[0]
+
+await updateAvatar({
+  updateUserId: userId,
+  input: { displayName: 'John' },
+  avatarFile: file
+})
+```
+
+## Cache Invalidation
+
+Mutations automatically invalidate related queries:
+
+```typescript apps/console/src/lib/graphql-hooks/user.ts
+export const useUpdateUser = () => {
+  const { client, queryClient } = useGraphQLClient()
+  
+  return useMutation<UpdateUserMutation, unknown, UpdateUserMutationVariables>({
+    mutationFn: async (payload) => client.request(UPDATE_USER, payload),
+    onSuccess: () => {
+      // Invalidate all user queries to refetch fresh data
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+    },
+  })
+}
+```
+
+### Invalidation Patterns
+
+```typescript
+// Invalidate all queries with this key
+queryClient.invalidateQueries({ queryKey: ['user'] })
+
+// Invalidate specific query
+queryClient.invalidateQueries({ queryKey: ['user', userId] })
+
+// Invalidate multiple keys
+queryClient.invalidateQueries({ queryKey: ['organizations'] })
+queryClient.invalidateQueries({ queryKey: ['organizationsWithMembers'] })
+```
+
+## Optimistic Updates
+
+Update UI immediately before server responds:
+
+```typescript
+const { mutate } = useUpdateUser()
+const queryClient = useQueryClient()
+
+mutate(
+  { updateUserId: userId, input: { firstName: 'John' } },
+  {
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['user', userId] })
+
+      // Snapshot previous value
+      const previousUser = queryClient.getQueryData(['user', userId])
+
+      // Optimistically update
+      queryClient.setQueryData(['user', userId], (old) => ({
+        ...old,
+        user: { ...old.user, firstName: variables.input.firstName }
+      }))
+
+      return { previousUser }
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      queryClient.setQueryData(
+        ['user', userId],
+        context.previousUser
+      )
+    },
+    onSettled: () => {
+      // Refetch after error or success
+      queryClient.invalidateQueries({ queryKey: ['user', userId] })
+    },
+  }
+)
+```
+
+## Error Handling
+
+Handle GraphQL errors gracefully:
+
+```typescript
+import { parseErrorMessage } from '@/utils/graphQlErrorMatcher'
+
+const { mutateAsync } = useUpdateUser()
+
+try {
+  await mutateAsync(variables)
+} catch (error) {
+  const errorMessage = parseErrorMessage(error)
+  // errorMessage: "Email already exists" or "Validation failed"
+  toast.error(errorMessage)
+}
+```
+
+## Response Extensions
+
+Some mutations return custom extensions:
+
+```typescript apps/console/src/lib/graphql-hooks/organization.ts
+type CreateOrgExtensions = {
+  auth?: {
+    access_token: string
+    refresh_token: string
+    authorized_organization: string
+  }
+}
+
+export const useCreateOrganization = () => {
+  const { client, queryClient } = useGraphQLClient()
+
+  return useMutation<
+    { data: CreateOrganizationMutation; extensions?: CreateOrgExtensions },
+    unknown,
+    CreateOrganizationMutationVariables
+  >({
+    mutationFn: async (input) => {
+      const response = await client.rawRequest<
+        CreateOrganizationMutation,
+        CreateOrganizationMutationVariables
+      >(CREATE_ORGANIZATION, input)
+
+      return {
+        data: response.data,
+        extensions: response.extensions as CreateOrgExtensions | undefined,
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['organizationsWithMembers'] })
+    },
+  })
+}
+```
+
+**Usage:**
+
+```typescript
+const { mutateAsync: createOrg } = useCreateOrganization()
+
+const result = await createOrg({ input: { name: 'acme' } })
+
+if (result.extensions?.auth) {
+  // Update auth tokens
+  setTokens(result.extensions.auth)
+}
+```
+
+## Best Practices
+
+<Card title="Handle All States" icon="list-check">
+Always handle pending, error, and success states in your UI.
+</Card>
+
+<Card title="Invalidate Related Queries" icon="rotate">
+Invalidate query cache after mutations to keep data fresh.
+</Card>
+
+<Card title="Use Optimistic Updates" icon="bolt">
+For better UX, update the UI optimistically before the server responds.
+</Card>
+
+<Card title="Parse Error Messages" icon="message">
+Use utility functions to extract user-friendly error messages from GraphQL errors.
+</Card>
+
+<Card title="Disable During Submission" icon="lock">
+Disable form submission while mutations are pending to prevent duplicate requests.
+</Card>
+
+<Card title="Show User Feedback" icon="bell">
+Always show success/error notifications after mutations complete.
+</Card>

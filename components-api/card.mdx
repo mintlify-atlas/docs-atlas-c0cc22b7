@@ -1,0 +1,173 @@
+---
+title: Card
+description: A versatile container component with semantic subcomponents for headers, content, and footers
+---
+
+## Overview
+
+The Card component provides a flexible container with multiple subcomponents for building structured UI elements. It includes Card, CardHeader, CardTitle, CardDescription, CardContent, and CardFooter.
+
+## Components
+
+### Card
+
+The main container component with rounded borders and shadow.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the card
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLDivElement>">
+  Ref to the underlying div element
+</ParamField>
+
+<ParamField path="children" type="React.ReactNode">
+  Content to render inside the card
+</ParamField>
+
+### CardHeader
+
+Container for the card's header section with vertical spacing.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the header
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLDivElement>">
+  Ref to the underlying div element
+</ParamField>
+
+<ParamField path="children" type="React.ReactNode">
+  Content to render inside the header
+</ParamField>
+
+### CardTitle
+
+Displays the main title of the card with large, semibold text.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the title
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLDivElement>">
+  Ref to the underlying div element
+</ParamField>
+
+<ParamField path="children" type="React.ReactNode">
+  Title text or content
+</ParamField>
+
+### CardDescription
+
+Displays descriptive text with muted styling.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the description
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLDivElement>">
+  Ref to the underlying div element
+</ParamField>
+
+<ParamField path="children" type="React.ReactNode">
+  Description text or content
+</ParamField>
+
+### CardContent
+
+Main content area of the card with padding.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the content area
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLDivElement>">
+  Ref to the underlying div element
+</ParamField>
+
+<ParamField path="children" type="React.ReactNode">
+  Content to render in the main area
+</ParamField>
+
+### CardFooter
+
+Footer section with flex layout for actions or additional information.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the footer
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLDivElement>">
+  Ref to the underlying div element
+</ParamField>
+
+<ParamField path="children" type="React.ReactNode">
+  Content to render in the footer
+</ParamField>
+
+## Usage
+
+```tsx
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@repo/ui'
+
+export function Example() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Card Title</CardTitle>
+        <CardDescription>Card description goes here</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p>Main content of the card</p>
+      </CardContent>
+      <CardFooter>
+        <button>Action</button>
+      </CardFooter>
+    </Card>
+  )
+}
+```
+
+## Examples
+
+### Basic Card
+
+```tsx
+<Card>
+  <CardContent>
+    Simple card content
+  </CardContent>
+</Card>
+```
+
+### Card with Header and Footer
+
+```tsx
+<Card>
+  <CardTitle>Settings</CardTitle>
+  <CardContent>
+    <p>Configure your preferences</p>
+  </CardContent>
+  <CardFooter>
+    <button>Save Changes</button>
+  </CardFooter>
+</Card>
+```
+
+### Custom Styled Card
+
+```tsx
+<Card className="max-w-md">
+  <CardHeader>
+    <CardTitle>Welcome</CardTitle>
+    <CardDescription>Get started with your account</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>Your content here</p>
+  </CardContent>
+</Card>
+```
+
+## Implementation
+
+Source: `/home/daytona/workspace/source/packages/ui/src/cardpanel/card.tsx`

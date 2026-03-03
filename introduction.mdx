@@ -1,0 +1,213 @@
+---
+title: 'Welcome to Openlane UI'
+description: 'A modern, developer-first compliance automation platform built with Next.js, React, and TypeScript'
+---
+
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.svg"
+  alt="Openlane UI Hero Light"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.svg"
+  alt="Openlane UI Hero Dark"
+/>
+
+## Overview
+
+Openlane UI is a comprehensive monorepo containing all frontend assets for the Openlane compliance automation platform. Built on modern web technologies, it provides both a full-featured console application and a reusable component library.
+
+<Note>
+  Compliance isn't just a checkbox—it's your reputation. Openlane streamlines compliance workflows with a developer-first approach.
+</Note>
+
+## What's Inside?
+
+This monorepo is powered by [Bun](https://bun.sh/) and [Turborepo](https://turbo.build/repo/), containing multiple applications and shared packages:
+
+### Applications
+
+<CardGroup cols={2}>
+  <Card
+    title="Openlane Console"
+    icon="browser"
+    href="/console/overview"
+  >
+    Full-featured compliance management SaaS platform with authentication, dashboards, and comprehensive compliance workflows
+  </Card>
+  <Card
+    title="Storybook"
+    icon="book"
+    href="/components/storybook"
+  >
+    Interactive component documentation and development environment at [storybook.theopenlane.io](https://storybook.theopenlane.io/)
+  </Card>
+</CardGroup>
+
+### Packages
+
+<CardGroup cols={2}>
+  <Card
+    title="@repo/codegen"
+    icon="code"
+    href="/api/codegen"
+  >
+    Auto-generated GraphQL functions using [@graphql-codegen](https://the-guild.dev/graphql/codegen) for type-safe API requests
+  </Card>
+  <Card
+    title="@repo/ui"
+    icon="palette"
+    href="/components/overview"
+  >
+    Comprehensive UI component library with 50+ components built on Radix UI and Tailwind CSS
+  </Card>
+  <Card
+    title="@repo/dally"
+    icon="database"
+    href="/api/dally"
+  >
+    Data Access Layer (DAL) library sharing common patterns and functionality across applications
+  </Card>
+  <Card
+    title="Configuration Packages"
+    icon="gear"
+    href="/architecture/packages"
+  >
+    Shared ESLint, TypeScript, and Tailwind configurations for consistent development experience
+  </Card>
+</CardGroup>
+
+## Technology Stack
+
+Openlane UI leverages best-in-class technologies for modern web development:
+
+<CardGroup cols={2}>
+  <Card title="Next.js 16" icon="react">
+    Latest Next.js with App Router for server-side rendering and optimal performance
+  </Card>
+  <Card title="React 19" icon="react">
+    Latest React with improved concurrent rendering and server components
+  </Card>
+  <Card title="TypeScript" icon="code">
+    Full type safety across the entire codebase for better developer experience
+  </Card>
+  <Card title="Tailwind CSS 4" icon="paintbrush">
+    Utility-first CSS framework for rapid UI development
+  </Card>
+  <Card title="Bun" icon="rabbit">
+    Ultra-fast JavaScript runtime and package manager
+  </Card>
+  <Card title="Turborepo" icon="rocket">
+    High-performance build system for monorepo management
+  </Card>
+</CardGroup>
+
+### Core Libraries
+
+- **[SWR](https://swr.vercel.app/)** - Client-side data fetching with automatic caching and revalidation
+- **[Radix UI](https://www.radix-ui.com/)** - Unstyled, accessible component primitives
+- **[TanStack Query](https://tanstack.com/query)** - Powerful data synchronization for server state
+- **[NextAuth.js](https://next-auth.js.org/)** - Complete authentication solution with OAuth providers
+- **[GraphQL](https://graphql.org/)** - Type-safe API communication with the Openlane backend
+
+## Key Features
+
+<AccordionGroup>
+  <Accordion title="Compliance Automation" icon="shield-check">
+    Comprehensive compliance management including:
+    - Control frameworks and implementations
+    - Risk assessment and management
+    - Policy and procedure documentation
+    - Evidence collection and tracking
+    - Automated compliance reporting
+  </Accordion>
+
+  <Accordion title="Modern Authentication" icon="lock">
+    Secure authentication with multiple providers:
+    - GitHub OAuth integration
+    - Google OAuth integration
+    - Single Sign-On (SSO) support
+    - WebAuthn/Passkey support
+    - Multi-factor authentication
+  </Accordion>
+
+  <Accordion title="Developer Experience" icon="code">
+    Built for developers with:
+    - Full TypeScript support
+    - GraphQL code generation
+    - Hot module replacement
+    - Component-driven development
+    - Comprehensive testing setup
+  </Accordion>
+
+  <Accordion title="Enterprise Ready" icon="building">
+    Production-ready features:
+    - Multi-organization support
+    - Role-based access control
+    - Audit logging
+    - Custom branding
+    - Stripe billing integration
+  </Accordion>
+</AccordionGroup>
+
+## Architecture Highlights
+
+```mermaid
+graph TD
+    A[Openlane UI Monorepo] --> B[Apps]
+    A --> C[Packages]
+    B --> D[Console - Next.js App]
+    B --> E[Storybook - Component Docs]
+    C --> F[@repo/ui - Components]
+    C --> G[@repo/codegen - GraphQL]
+    C --> H[@repo/dally - DAL]
+    C --> I[Shared Configs]
+    D --> F
+    D --> G
+    D --> H
+    E --> F
+```
+
+The monorepo architecture enables:
+- **Code Sharing**: Reusable components and utilities across applications
+- **Consistent Configuration**: Shared linting, formatting, and build configs
+- **Type Safety**: End-to-end TypeScript with shared type definitions
+- **Optimized Builds**: Turborepo caching for faster development and CI/CD
+
+## Quick Links
+
+<CardGroup cols={3}>
+  <Card
+    title="Quick Start"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Get running locally in 5 minutes
+  </Card>
+  <Card
+    title="Installation"
+    icon="download"
+    href="/installation"
+  >
+    Detailed setup instructions
+  </Card>
+  <Card
+    title="Contributing"
+    icon="code-pull-request"
+    href="/development/contributing"
+  >
+    Join our open source community
+  </Card>
+</CardGroup>
+
+## Community & Support
+
+- **GitHub**: [theopenlane/openlane-ui](https://github.com/theopenlane/openlane-ui)
+- **Backend API**: [theopenlane/core](https://github.com/theopenlane/core)
+- **License**: Apache 2.0
+- **Console**: [console.theopenlane.io](https://console.theopenlane.io/)
+
+<Note>
+  Ready to get started? Head over to the [Quick Start](/quickstart) guide to run Openlane UI locally.
+</Note>

@@ -1,0 +1,486 @@
+---
+title: 'Organization Management'
+description: 'Multi-organization support with role-based access, team collaboration, and organization switching'
+---
+
+## Overview
+
+Openlane Console supports multi-organization architecture, allowing users to belong to multiple organizations and switch between them seamlessly. Each organization has its own isolated compliance data, team members, and settings.
+
+<Note>
+Organizations are the primary isolation boundary in the Console. All compliance data (controls, policies, risks, evidence) is scoped to an organization.
+</Note>
+
+## Organization Types
+
+The Console supports two types of organizations:
+
+### Personal Organizations
+
+Every user automatically gets a personal organization:
+
+- **Purpose**: Individual user workspace
+- **Ownership**: User is the sole owner
+- **Usage**: Testing, personal projects, individual compliance needs
+- **Visibility**: Hidden from organization switcher (marked with `personalOrg: true`)
+
+### Team Organizations
+
+Organizations created for teams and companies:
+
+- **Purpose**: Multi-user collaboration
+- **Members**: Multiple users with different roles
+- **Usage**: Enterprise compliance management
+- **Visibility**: Shown in organization switcher
+
+## Organization Selection
+
+Users can view and select organizations at `/organization`:
+
+```typescript
+// apps/console/src/app/(protected)/organization/page.tsx
+const OrganizationLanding: React.FC = () => {
+  return (
+    <section>
+      <ExistingOrganizations />
+      <CreateOrganizationForm />
+    </section>
+  )
+}
+```
+
+### Existing Organizations Component
+
+Displays all organizations the user belongs to:
+
+<Tabs>
+  <Tab title="Organization List">
+    ```typescript
+    const { data } = useGetAllOrganizationsWithMembers({ 
+      userID: sessionData?.user.userId 
+    })
+    
+    // Filter out personal orgs
+    const orgs = data?.organizations.edges?.filter(
+      (org) => !org?.node?.personalOrg
+    ) || []
+    ```
+    
+    Each organization card shows:
+    - Organization avatar/logo
+    - Organization display name
+    - User's role in the organization
+    - Action button (Select or Leave)
+  </Tab>
+  
+  <Tab title="Role Display">
+    ```typescript
+    const role = org?.node?.members?.edges?.[0]?.node?.role ?? 'Owner'
+    
+    <Tag>{role}</Tag>
+    ```
+    
+    Possible roles:
+    - **Owner**: Full administrative access
+    - **Admin**: Administrative access (cannot delete org)
+    - **Member**: Standard user access
+    - **Viewer**: Read-only access
+  </Tab>
+  
+  <Tab title="Active Organization">
+    ```typescript
+    const currentOrg = sessionData?.user.activeOrganizationId
+    
+    {currentOrg !== org?.node?.id ? (
+      <Button onClick={() => handleOrganizationSwitch(org?.node?.id)}>
+        Select
+      </Button>
+    ) : (
+      <Badge>Active</Badge>
+    )}
+    ```
+    
+    The currently active organization is highlighted and cannot be selected again.
+  </Tab>
+</Tabs>
+
+## Organization Switching
+
+Switching between organizations involves updating the session and redirecting:
+
+<Steps>
+  <Step title="Initiate Switch">
+    ```typescript
+    const handleOrganizationSwitch = async (orgId?: string) => {
+      const response = await switchOrganization({
+        target_organization_id: orgId,
+      })
+      
+      // Check if SSO redirect is needed
+      if (handleSSORedirect(response)) {
+        return
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Update Session">
+    ```typescript
+    if (sessionData && response) {
+      await updateSession({
+        ...response.session,
+        user: {
+          ...sessionData.user,
+          accessToken: response.access_token,
+          organization: orgId,
+          refreshToken: response.refresh_token,
+        },
+      })
+    }
+    ```
+    
+    New access and refresh tokens are issued for the target organization.
+  </Step>
+  
+  <Step title="Clear Cache">
+    ```typescript
+    requestAnimationFrame(() => {
+      queryClient?.clear()
+    })
+    ```
+    
+    Clear all cached queries to prevent data leakage between organizations.
+  </Step>
+  
+  <Step title="Redirect to Dashboard">
+    ```typescript
+    push('/dashboard')
+    ```
+    
+    Navigate to the dashboard of the new organization.
+  </Step>
+</Steps>
+
+<Warning>
+**Critical**: Always clear the query cache when switching organizations to prevent showing data from the previous organization. Data isolation is essential for security.
+</Warning>
+
+## Creating Organizations
+
+Users can create new organizations:
+
+```typescript
+const CreateOrganizationForm = () => {
+  const handleCreate = async (data: CreateOrgInput) => {
+    const newOrg = await createOrganization({
+      name: data.name,
+      displayName: data.displayName,
+      description: data.description,
+    })
+    
+    // Automatically switch to new org
+    await handleOrganizationSwitch(newOrg.id)
+  }
+}
+```
+
+<Accordion title="Organization Fields">
+  - **Name**: URL-friendly identifier (e.g., `acme-corp`)
+  - **Display Name**: Human-readable name (e.g., "Acme Corporation")
+  - **Description**: Optional description of the organization
+  - **Avatar**: Optional logo/avatar image
+</Accordion>
+
+## Organization Settings
+
+Access organization settings at `/organization-settings`:
+
+<Tabs>
+  <Tab title="General Settings">
+    Configure basic organization information:
+    
+    - Organization name and display name
+    - Description
+    - Avatar/logo upload
+    - Contact information
+    - Organization timezone
+  </Tab>
+  
+  <Tab title="Authentication">
+    Configure authentication settings:
+    
+    - **Allowed Domains**: Restrict signups to specific email domains
+    - **SSO Configuration**: Set up enterprise SSO
+    - **2FA Policy**: Require 2FA for all members
+    - **Session Settings**: Configure session timeout
+    
+    See [Authentication](/console/authentication) for details.
+  </Tab>
+  
+  <Tab title="Billing">
+    Manage subscription and billing:
+    
+    - Current plan and usage
+    - Payment method
+    - Billing history
+    - Invoices
+    - Contract details
+    
+    ```typescript
+    // Stripe integration
+    import Stripe from 'stripe'
+    
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+    ```
+  </Tab>
+  
+  <Tab title="Integrations">
+    Connect third-party services:
+    
+    - Cloud providers (AWS, Azure, GCP)
+    - Version control (GitHub, GitLab)
+    - Monitoring tools
+    - Ticketing systems
+    - Communication platforms
+  </Tab>
+  
+  <Tab title="Custom Data">
+    Configure custom fields for:
+    
+    - Controls
+    - Policies
+    - Procedures  
+    - Risks
+    - Evidence
+    
+    Extend the schema with organization-specific metadata.
+  </Tab>
+  
+  <Tab title="Subscribers">
+    Manage notification subscribers:
+    
+    - Email notifications
+    - Webhook endpoints
+    - Slack channels
+    - Integration subscribers
+  </Tab>
+  
+  <Tab title="Audit Logs">
+    View organization activity logs:
+    
+    - User actions
+    - Data changes
+    - Authentication events
+    - Settings modifications
+    - Export logs for compliance
+  </Tab>
+</Tabs>
+
+## User Management
+
+Manage team members at `/user-management`:
+
+### Inviting Users
+
+<Steps>
+  <Step title="Send Invitation">
+    ```typescript
+    const inviteUser = async (email: string, role: OrgMembershipRole) => {
+      await createInvite({
+        email,
+        role,
+        organizationId: currentOrgId,
+      })
+    }
+    ```
+  </Step>
+  
+  <Step title="User Receives Email">
+    Invited user receives email with invitation link:
+    ```
+    https://console.openlane.io/invite?token=inv_abc123
+    ```
+  </Step>
+  
+  <Step title="Accept Invitation">
+    User clicks link, creates account (if needed), and joins organization.
+  </Step>
+</Steps>
+
+### Member Roles
+
+<AccordionGroup>
+  <Accordion title="Owner">
+    **Full Access**:
+    - All admin permissions
+    - Delete organization
+    - Transfer ownership
+    - Cannot be removed (must transfer ownership first)
+    
+    ```typescript
+    role.toUpperCase() === OrgMembershipRole.OWNER
+    ```
+  </Accordion>
+  
+  <Accordion title="Admin">
+    **Administrative Access**:
+    - Manage members (except owner)
+    - Configure organization settings
+    - Manage compliance data
+    - Cannot delete organization
+  </Accordion>
+  
+  <Accordion title="Member">
+    **Standard Access**:
+    - Create and edit compliance data
+    - Upload evidence
+    - Complete assignments
+    - View organization data
+  </Accordion>
+  
+  <Accordion title="Viewer">
+    **Read-Only Access**:
+    - View compliance data
+    - Generate reports
+    - No editing permissions
+    - Cannot access settings
+  </Accordion>
+</AccordionGroup>
+
+### Leaving an Organization
+
+Non-owner members can leave organizations:
+
+```typescript
+const handleLeaveOrganization = async (membershipId: string, orgId: string) => {
+  await leaveOrganization({ deleteOrgMembershipId: membershipId })
+  
+  // Switch to another organization
+  const remainingOrgs = data?.organizations.edges?.filter(
+    (org) => org?.node?.id !== orgId
+  ) || []
+  
+  const nextOrg = remainingOrgs[0]?.node?.id
+  if (nextOrg) {
+    await handleOrganizationSwitch(nextOrg)
+  }
+}
+```
+
+<ConfirmationDialog>
+  **Leave Organization**
+  
+  This action cannot be undone. You will be permanently removed from **Acme Corporation**.
+  
+  You will need to be re-invited to regain access.
+</ConfirmationDialog>
+
+<Warning>
+Organization owners cannot leave their organization. They must first transfer ownership to another member or delete the organization.
+</Warning>
+
+## SSO Integration with Organizations
+
+When SSO is configured, organization switching may trigger SSO re-authentication:
+
+```typescript
+const handleSSORedirect = (response: SwitchOrgResponse) => {
+  if (response?.requiresSSO) {
+    // Redirect to SSO provider
+    window.location.href = response.ssoRedirectUrl
+    return true
+  }
+  return false
+}
+```
+
+This ensures users authenticate with the correct identity provider for each organization.
+
+## Query Invalidation Strategy
+
+When performing organization-related actions, invalidate relevant queries:
+
+```typescript
+// After leaving organization
+queryClient.invalidateQueries({
+  predicate: (query) => 
+    ['memberships', 'organizationsWithMembers', 'groups']
+      .includes(query.queryKey[0] as string),
+})
+
+// After switching organization
+queryClient.clear()  // Clear all queries
+
+// After updating settings
+queryClient.invalidateQueries({
+  predicate: (query) => {
+    const [firstKey] = query.queryKey
+    return firstKey === 'organizationSetting'
+  },
+})
+```
+
+## Organization Context
+
+Access current organization throughout the app:
+
+```typescript
+const { currentOrgId, currentOrg } = useOrganization()
+
+// Use in queries
+const { data } = useGetOrganizationSetting(currentOrgId || '')
+
+// Conditional rendering
+if (!currentOrgId) {
+  return <SelectOrganizationPrompt />
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Data Isolation">
+    - Always scope queries by organization ID
+    - Clear cache when switching organizations
+    - Validate organization membership server-side
+    - Use row-level security in database
+  </Accordion>
+  
+  <Accordion title="Performance">
+    - Cache organization list with reasonable TTL
+    - Prefetch common queries on organization switch
+    - Use optimistic updates for settings changes
+    - Implement pagination for large member lists
+  </Accordion>
+  
+  <Accordion title="Security">
+    - Verify organization membership on every request
+    - Enforce role-based access control
+    - Audit organization switches and membership changes
+    - Require re-authentication for sensitive operations
+  </Accordion>
+  
+  <Accordion title="User Experience">
+    - Show organization context in navigation
+    - Confirm before leaving organization
+    - Handle edge cases (last organization, pending invites)
+    - Provide clear feedback during organization switch
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Compliance Features" icon="shield-check" href="/console/compliance-features">
+    Manage controls, policies, and compliance data
+  </Card>
+  <Card title="Authentication" icon="key" href="/console/authentication">
+    Configure SSO and authentication settings
+  </Card>
+  <Card title="User Management" icon="users" href="/console/user-management">
+    Invite and manage team members
+  </Card>
+  <Card title="Deployment" icon="rocket" href="/console/deployment">
+    Deploy multi-tenant architecture
+  </Card>
+</CardGroup>

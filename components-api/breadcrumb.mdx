@@ -1,0 +1,162 @@
+---
+title: Breadcrumb
+description: A navigation component that indicates the current page's location within a navigational hierarchy.
+---
+
+## Overview
+
+The Breadcrumb component provides a way to display the current page's location within a navigational hierarchy. It consists of multiple sub-components that work together to create accessible breadcrumb navigation.
+
+## Components
+
+### Breadcrumb
+
+The root container component for breadcrumb navigation.
+
+<ParamField path="separator" type="React.ReactNode" optional>
+  Custom separator element to display between breadcrumb items.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLElement>" optional>
+  Ref forwarded to the underlying nav element.
+</ParamField>
+
+Inherits all props from `React.ComponentPropsWithoutRef<'nav'>`.
+
+### BreadcrumbList
+
+An ordered list container for breadcrumb items.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the list.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLOListElement>" optional>
+  Ref forwarded to the underlying ol element.
+</ParamField>
+
+Inherits all props from `React.ComponentPropsWithoutRef<'ol'>`.
+
+### BreadcrumbItem
+
+A list item wrapper for individual breadcrumb entries.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the item.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLLIElement>" optional>
+  Ref forwarded to the underlying li element.
+</ParamField>
+
+Inherits all props from `React.ComponentPropsWithoutRef<'li'>`.
+
+### BreadcrumbLink
+
+A link component that automatically handles internal and external links.
+
+<ParamField path="asChild" type="boolean" optional>
+  When true, uses Radix UI's Slot component to merge props with the child element.
+</ParamField>
+
+<ParamField path="href" type="string" optional>
+  The URL the link points to. Internal links (starting with '/') use Next.js Link component.
+</ParamField>
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the link.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLAnchorElement>" optional>
+  Ref forwarded to the underlying anchor element.
+</ParamField>
+
+Inherits all props from `React.ComponentPropsWithoutRef<'a'>`.
+
+### BreadcrumbPage
+
+Represents the current page in the breadcrumb trail.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the current page indicator.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLSpanElement>" optional>
+  Ref forwarded to the underlying span element.
+</ParamField>
+
+Inherits all props from `React.ComponentPropsWithoutRef<'span'>`.
+
+### BreadcrumbSeparator
+
+A visual separator between breadcrumb items.
+
+<ParamField path="children" type="React.ReactNode" optional>
+  Custom separator content. Defaults to ChevronRight icon.
+</ParamField>
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the separator.
+</ParamField>
+
+Inherits all props from `React.ComponentProps<'li'>`.
+
+### BreadcrumbEllipsis
+
+Displays an ellipsis icon to indicate collapsed breadcrumb items.
+
+<ParamField path="className" type="string" optional>
+  Additional CSS classes to apply to the ellipsis.
+</ParamField>
+
+Inherits all props from `React.ComponentProps<'span'>`.
+
+## Usage
+
+```tsx
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from '@repo/ui/breadcrumb'
+import { Slash } from 'lucide-react'
+
+function MyBreadcrumb() {
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/">Home</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator>
+          <Slash />
+        </BreadcrumbSeparator>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/programs">Programs</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator>
+          <Slash />
+        </BreadcrumbSeparator>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/components">Components</BreadcrumbLink>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  )
+}
+```
+
+## Accessibility
+
+The Breadcrumb component includes several accessibility features:
+
+- The root `nav` element has `aria-label="breadcrumb"` for screen readers
+- The current page uses `role="link"`, `aria-disabled="true"`, and `aria-current="page"`
+- Separators use `role="presentation"` and `aria-hidden="true"` to hide them from screen readers
+- The ellipsis includes a visually hidden "More" label for screen readers
+
+## Source
+
+Implementation: `/home/daytona/workspace/source/packages/ui/src/breadcrumb/breadcrumb.tsx`

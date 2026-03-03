@@ -1,0 +1,183 @@
+---
+title: Progress Circle
+description: API reference for the ProgressCircle component
+---
+
+## Overview
+
+The ProgressCircle component displays progress as a circular indicator. Based on Tremor's ProgressCircle component, it supports multiple color variants and customizable sizing.
+
+## Import
+
+```tsx
+import { ProgressCircle } from '@repo/ui/progress-circle'
+```
+
+## ProgressCircle
+
+Circular progress indicator with customizable appearance and animation.
+
+### Props
+
+<ParamField path="value" type="number" default="0">
+  Current progress value. Will be clamped between 0 and `max`.
+</ParamField>
+
+<ParamField path="max" type="number" default="100">
+  Maximum value for the progress. The progress percentage is calculated as `(value / max) * 100`.
+</ParamField>
+
+<ParamField path="variant" type="'default' | 'neutral' | 'blue' | 'warning' | 'error' | 'success'" default="'default'">
+  The color variant of the progress circle:
+  - `default`: Primary color stroke
+  - `neutral`: Gray stroke for neutral states
+  - `blue`: Blue stroke for informational progress
+  - `warning`: Warning/yellow color for cautionary states
+  - `error`: Destructive/red color for error states
+  - `success`: Primary/green color for success states
+</ParamField>
+
+<ParamField path="radius" type="number" default="32">
+  The radius of the circle in pixels. Total width/height will be `radius * 2`.
+</ParamField>
+
+<ParamField path="strokeWidth" type="number" default="6">
+  The width of the progress stroke in pixels.
+</ParamField>
+
+<ParamField path="showAnimation" type="boolean" default="true">
+  Whether to animate progress changes. When true, progress updates transition smoothly over 300ms.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the SVG element.
+</ParamField>
+
+<ParamField path="children" type="React.ReactNode">
+  Optional content to display in the center of the circle (e.g., percentage text, icons).
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<SVGSVGElement>">
+  Ref object to attach to the underlying SVG element.
+</ParamField>
+
+### SVG Props
+
+Extends `Omit<React.SVGProps<SVGSVGElement>, 'value'>`, inheriting all standard SVG attributes except `value`:
+- `style`
+- `onClick`
+- `onMouseEnter`
+- etc.
+
+### Usage
+
+```tsx
+import { ProgressCircle } from '@repo/ui/progress-circle'
+
+function Example() {
+  return (
+    <ProgressCircle value={75} variant="success">
+      <span className="text-sm font-medium">75%</span>
+    </ProgressCircle>
+  )
+}
+```
+
+```tsx
+// Custom size and stroke
+<ProgressCircle 
+  value={60} 
+  radius={48} 
+  strokeWidth={8}
+  variant="blue"
+>
+  <div className="text-center">
+    <div className="text-2xl font-bold">60</div>
+    <div className="text-xs text-muted-foreground">Complete</div>
+  </div>
+</ProgressCircle>
+```
+
+```tsx
+// Without animation
+<ProgressCircle 
+  value={100} 
+  showAnimation={false}
+  variant="success"
+/>
+```
+
+```tsx
+// Different max value
+<ProgressCircle 
+  value={45} 
+  max={60}
+  variant="warning"
+>
+  <span className="text-sm">45/60</span>
+</ProgressCircle>
+```
+
+```tsx
+// Error state
+<ProgressCircle 
+  value={25} 
+  variant="error"
+>
+  <span className="text-sm font-medium text-destructive">Low</span>
+</ProgressCircle>
+```
+
+## Accessibility
+
+- Uses proper ARIA attributes:
+  - `role="progressbar"`
+  - `aria-label="Progress circle"`
+  - `aria-valuenow={value}`
+  - `aria-valuemin={0}`
+  - `aria-valuemax={max}`
+- Includes data attributes for value and max:
+  - `data-value={safeValue}`
+  - `data-max={max}`
+
+## Styling
+
+The component uses Tailwind Variants for styling with the following structure:
+
+### Background Circle
+A lighter stroke representing the total progress range (30-40% opacity of the variant color).
+
+### Progress Circle
+The filled portion representing current progress:
+- Smooth color transitions
+- Optional 300ms ease-in-out animation
+- Round stroke line caps
+- Automatically calculated stroke-dashoffset based on progress percentage
+
+### Center Content
+Absolutely positioned container for children:
+- Centered horizontally and vertically
+- Does not affect circle rendering
+- Useful for percentage labels or status icons
+
+## Variant Colors
+
+- `default`: Primary color (`stroke-primary` with `stroke-primary/30` background)
+- `neutral`: Gray (`stroke-gray-500` with `stroke-gray-200` background)
+- `blue`: Info color (`stroke-info` with `stroke-info/40` background)
+- `warning`: Warning color (`stroke-warning` with `stroke-warning/30` background)
+- `error`: Destructive color (`stroke-destructive` with `stroke-destructive/30` background)
+- `success`: Primary color (same as default)
+
+## Implementation Details
+
+### Progress Calculation
+```tsx
+const safeValue = Math.min(max, Math.max(value, 0)) // Clamp between 0 and max
+const normalizedRadius = radius - strokeWidth / 2
+const circumference = normalizedRadius * 2 * Math.PI
+const offset = circumference - (safeValue / max) * circumference
+```
+
+### SVG Rotation
+The SVG is rotated -90 degrees to start progress from the top (12 o'clock position).

@@ -1,0 +1,244 @@
+---
+title: Toast
+description: API reference for the Toast component and useToast hook
+---
+
+## Overview
+
+The Toast component displays temporary notification messages. It uses Radix UI Toast primitives and includes a powerful `useToast` hook for programmatic control.
+
+## Import
+
+```tsx
+import { useToast } from '@repo/ui/toast'
+import { Toaster } from '@repo/ui/toast'
+```
+
+## Setup
+
+Add the `Toaster` component to your app root:
+
+```tsx
+import { Toaster } from '@repo/ui/toast'
+
+function App() {
+  return (
+    <>
+      {/* Your app content */}
+      <Toaster />
+    </>
+  )
+}
+```
+
+## useToast Hook
+
+The primary way to display toast notifications programmatically.
+
+### Returns
+
+<ParamField path="toast" type="function">
+  Function to display a new toast notification. See toast function signature below.
+</ParamField>
+
+<ParamField path="toasts" type="ToasterToast[]">
+  Array of currently active toast notifications.
+</ParamField>
+
+<ParamField path="dismiss" type="(toastId?: string) => void">
+  Function to dismiss a toast. If no ID is provided, dismisses all toasts.
+</ParamField>
+
+### toast() Function
+
+Call the `toast` function to display a notification:
+
+<ParamField path="title" type="React.ReactNode">
+  The title of the toast notification.
+</ParamField>
+
+<ParamField path="description" type="React.ReactNode">
+  The description/body content of the toast.
+</ParamField>
+
+<ParamField path="variant" type="'default' | 'success' | 'error' | 'warning' | 'info' | 'info2'" default="'default'">
+  The visual style variant of the toast:
+  - `default`: Standard success styling with green theme
+  - `success`: Success message with check icon and green theme
+  - `error`: Error message with warning icon and red theme
+  - `warning`: Warning message with info icon and yellow theme
+  - `info`: Info message with info icon and blue theme
+  - `info2`: Alternative info styling with different blue theme
+</ParamField>
+
+<ParamField path="action" type="ToastActionElement">
+  Optional action button element to display in the toast.
+</ParamField>
+
+<ParamField path="duration" type="number">
+  Duration in milliseconds before the toast auto-dismisses. If not provided, toast persists until manually dismissed.
+</ParamField>
+
+<ParamField path="open" type="boolean">
+  Controlled open state of the toast.
+</ParamField>
+
+<ParamField path="onOpenChange" type="(open: boolean) => void">
+  Callback fired when the open state changes.
+</ParamField>
+
+### Return Value
+
+The `toast()` function returns an object with:
+
+<ParamField path="id" type="string">
+  Unique identifier for the toast instance.
+</ParamField>
+
+<ParamField path="dismiss" type="() => void">
+  Function to dismiss this specific toast.
+</ParamField>
+
+<ParamField path="update" type="(props: ToasterToast) => void">
+  Function to update the toast properties after creation.
+</ParamField>
+
+### Usage Examples
+
+```tsx
+import { useToast } from '@repo/ui/toast'
+
+function Example() {
+  const { toast } = useToast()
+
+  return (
+    <button
+      onClick={() => {
+        toast({
+          title: "Success!",
+          description: "Your changes have been saved.",
+          variant: "success",
+        })
+      }}
+    >
+      Save
+    </button>
+  )
+}
+```
+
+```tsx
+// Toast with auto-dismiss
+toast({
+  title: "Processing...",
+  description: "This will close in 3 seconds",
+  duration: 3000,
+  variant: "info",
+})
+```
+
+```tsx
+// Toast with manual control
+const { id, dismiss, update } = toast({
+  title: "Uploading...",
+  description: "0% complete",
+})
+
+// Later, update the toast
+update({
+  title: "Uploading...",
+  description: "50% complete",
+  id,
+})
+
+// Dismiss when done
+dismiss()
+```
+
+```tsx
+// Error toast
+toast({
+  title: "Error",
+  description: "Failed to save changes. Please try again.",
+  variant: "error",
+})
+```
+
+```tsx
+// Warning toast
+toast({
+  title: "Warning",
+  description: "You have unsaved changes.",
+  variant: "warning",
+})
+```
+
+## Toast Component
+
+Low-level component for rendering toast notifications. Typically used through the `useToast` hook.
+
+### Props
+
+<ParamField path="title" type="string">
+  The title text of the toast.
+</ParamField>
+
+<ParamField path="description" type="React.ReactNode | string">
+  The description content of the toast.
+</ParamField>
+
+<ParamField path="variant" type="'default' | 'success' | 'error' | 'warning' | 'info' | 'info2'" default="'default'">
+  The visual style variant.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLElement>">
+  Ref to the underlying Radix Toast element.
+</ParamField>
+
+### Radix UI Props
+
+Extends `React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root>`, inheriting Radix Toast props including:
+- `open`
+- `onOpenChange`
+- `duration`
+- `type`
+
+## Configuration
+
+### Toast Limits
+
+```tsx
+const TOAST_LIMIT = 1 // Maximum number of toasts shown at once
+```
+
+Only 1 toast is displayed at a time. New toasts replace older ones.
+
+### Remove Delay
+
+```tsx
+const TOAST_REMOVE_DELAY = 1000 // Delay before removing dismissed toasts (ms)
+```
+
+Toasts are removed from the DOM 1 second after being dismissed.
+
+## Accessibility
+
+- Toasts use Radix UI's accessible toast primitives
+- Proper ARIA attributes for screen readers
+- Keyboard navigation support
+- Focus management when toasts appear
+- Swipe gestures for mobile dismissal
+
+## Icon Variants
+
+Each variant displays a corresponding icon:
+- `success`: Check icon in green container
+- `error`: Triangle alert icon in red container
+- `warning`: Info icon in yellow container
+- `info`: Info icon in blue container
+- `info2`: Info icon in alternative blue container
+- `default`: No icon displayed

@@ -1,0 +1,136 @@
+---
+title: Alert
+description: API reference for the Alert component
+---
+
+## Overview
+
+The Alert component displays important messages to users. It supports multiple variants and can include icons, titles, and descriptions.
+
+## Import
+
+```tsx
+import { Alert, AlertTitle, AlertDescription } from '@repo/ui/alert'
+```
+
+## Alert
+
+The main container component for displaying alert messages.
+
+### Props
+
+<ParamField path="variant" type="'default' | 'destructive'" default="'default'">
+  The visual style variant of the alert.
+  - `default`: Standard background with foreground text
+  - `destructive`: Red/destructive styling for errors or warnings
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the alert container.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLDivElement>">
+  Ref object to attach to the underlying div element.
+</ParamField>
+
+### HTML Attributes
+
+Extends `React.HTMLAttributes<HTMLDivElement>`, inheriting all standard div attributes including:
+- `children`
+- `onClick`
+- `onMouseEnter`
+- `style`
+- etc.
+
+### Usage
+
+```tsx
+import { Alert, AlertTitle, AlertDescription } from '@repo/ui/alert'
+import { AlertCircle } from 'lucide-react'
+
+function Example() {
+  return (
+    <Alert variant="default">
+      <AlertCircle />
+      <AlertTitle>Heads up!</AlertTitle>
+      <AlertDescription>
+        You can add components to your app using the cli.
+      </AlertDescription>
+    </Alert>
+  )
+}
+```
+
+```tsx
+<Alert variant="destructive">
+  <AlertCircle />
+  <AlertTitle>Error</AlertTitle>
+  <AlertDescription>
+    Your session has expired. Please log in again.
+  </AlertDescription>
+</Alert>
+```
+
+## AlertTitle
+
+Heading component for alert titles.
+
+### Props
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the title.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLParagraphElement>">
+  Ref object to attach to the underlying heading element.
+</ParamField>
+
+### HTML Attributes
+
+Extends `React.HTMLAttributes<HTMLHeadingElement>`, inheriting all standard heading attributes.
+
+### Styling
+
+- Renders as an `h5` element
+- Default styles: medium font weight, tight line height and tracking
+- Bottom margin of 1 unit
+
+## AlertDescription
+
+Description component for alert content.
+
+### Props
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the description.
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<HTMLParagraphElement>">
+  Ref object to attach to the underlying div element.
+</ParamField>
+
+### HTML Attributes
+
+Extends `React.HTMLAttributes<HTMLParagraphElement>`, inheriting all standard paragraph attributes.
+
+### Styling
+
+- Renders as a `div` element
+- Small text size with relaxed leading for paragraph elements
+- Automatically formats nested paragraphs
+
+## Accessibility
+
+- The Alert component automatically sets `role="alert"` for screen readers
+- Icons should be placed before text content for proper reading order
+- Alert icons automatically positioned at left with text content offset
+
+## Styling
+
+The Alert component uses class-variance-authority for variant management:
+
+- Full width with rounded corners and border
+- Padding of 4 units
+- SVG icons automatically positioned absolutely at top-left
+- Content after icons automatically indented
+- Icon receives foreground color for consistency

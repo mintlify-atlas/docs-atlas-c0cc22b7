@@ -1,0 +1,91 @@
+---
+title: Pagination
+description: A component for navigating through paginated data with page size controls.
+---
+
+## Overview
+
+The Pagination component provides navigation controls for paginated data, including page navigation buttons and a page size selector.
+
+## Props
+
+<ParamField path="currentPage" type="number" required>
+  The current active page number (1-indexed).
+</ParamField>
+
+<ParamField path="totalPages" type="number" required>
+  The total number of pages available.
+</ParamField>
+
+<ParamField path="pageSize" type="number" required>
+  The current number of items displayed per page.
+</ParamField>
+
+<ParamField path="onPageChange" type="(page: number) => void" required>
+  Callback function called when the user navigates to a different page. Receives the new page number as an argument.
+</ParamField>
+
+<ParamField path="onPageSizeChange" type="(size: number) => void" required>
+  Callback function called when the user changes the page size. Receives the new page size as an argument.
+</ParamField>
+
+## Usage
+
+```tsx
+import { useState } from 'react'
+import Pagination from '@repo/ui/pagination'
+
+function MyTable() {
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const totalPages = 20
+
+  return (
+    <div>
+      {/* Your table content */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={setPageSize}
+      />
+    </div>
+  )
+}
+```
+
+## Features
+
+### Page Navigation
+
+The component provides four navigation buttons:
+
+- **First Page**: Jump to page 1 (disabled when on first page)
+- **Previous Page**: Go back one page (disabled when on first page)
+- **Next Page**: Go forward one page (disabled when on last page)
+- **Last Page**: Jump to the last page (disabled when on last page)
+
+### Page Size Selector
+
+Users can select from predefined page sizes:
+
+- 5 items per page
+- 10 items per page
+- 25 items per page
+- 50 items per page
+- 100 items per page
+
+### Page Indicator
+
+Displays the current page and total number of pages in the format: "Page X of Y"
+
+## Behavior
+
+- Navigation buttons are automatically disabled when at the first or last page
+- The page size selector triggers the `onPageSizeChange` callback when changed
+- Navigation buttons trigger the `onPageChange` callback with the appropriate page number
+
+## Source
+
+Implementation: `/home/daytona/workspace/source/packages/ui/src/pagination/pagination.tsx`

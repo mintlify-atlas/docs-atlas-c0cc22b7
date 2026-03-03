@@ -1,0 +1,183 @@
+---
+title: Development Setup
+description: Set up your local development environment for Openlane UI
+---
+
+This guide will help you set up your local development environment for contributing to Openlane UI.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed on your system:
+
+<Steps>
+  <Step title="Operating System">
+    The project is optimized for macOS environments. If you're using Linux or Windows, you may need to adapt some commands from the [Taskfile.yaml](https://github.com/theopenlane/openlane-ui/blob/main/Taskfile.yaml).
+  </Step>
+
+  <Step title="Node.js">
+    Install Node.js version `24.14.x` as specified in the project's engine requirements.
+    
+    ```bash
+    node --version
+    # Should output v24.14.x
+    ```
+  </Step>
+
+  <Step title="Bun Package Manager">
+    The project uses Bun `1.2.16` as its package manager. Install it using:
+    
+    ```bash
+    curl -fsSL https://bun.sh/install | bash
+    ```
+    
+    Verify the installation:
+    
+    ```bash
+    bun --version
+    # Should output 1.2.16
+    ```
+  </Step>
+
+  <Step title="Task Runner">
+    Install [Task](https://taskfile.dev/) for running development tasks:
+    
+    ```bash
+    brew install go-task/tap/go-task
+    ```
+  </Step>
+
+  <Step title="Pre-commit Hooks">
+    Install pre-commit for code quality checks:
+    
+    ```bash
+    brew install pre-commit
+    ```
+  </Step>
+</Steps>
+
+## Automated Setup
+
+The easiest way to set up your development environment is using the automated setup task:
+
+```bash
+task local-setup
+```
+
+This command will:
+- Install Bun package manager
+- Install pre-commit hooks
+- Configure git hooks
+- Run initial code quality checks
+
+<Note>
+  The `local-setup` task is designed for macOS. Linux and Windows users should review the [Taskfile.yaml](https://github.com/theopenlane/openlane-ui/blob/main/Taskfile.yaml) for equivalent commands.
+</Note>
+
+## Manual Setup
+
+If you prefer to set up your environment manually, follow these steps:
+
+<Steps>
+  <Step title="Install Bun">
+    ```bash
+    task install-bun
+    ```
+  </Step>
+
+  <Step title="Install Pre-commit">
+    ```bash
+    task install-precommit
+    ```
+  </Step>
+
+  <Step title="Configure Git Hooks">
+    ```bash
+    pre-commit install && pre-commit install-hooks
+    pre-commit autoupdate
+    ```
+  </Step>
+
+  <Step title="Install Dependencies">
+    ```bash
+    task install
+    ```
+    
+    This runs `bun install` to install all project dependencies.
+  </Step>
+</Steps>
+
+## Technology Stack
+
+Openlane UI is built with the following technologies:
+
+- **[TypeScript](https://www.typescriptlang.org/)** - Static type-checking
+- **[Bun](https://bun.sh/)** - Fast all-in-one JavaScript runtime and toolkit
+- **[Turborepo](https://turbo.build/repo/)** - High-performance build system for monorepos
+- **[Next.js](https://nextjs.org/)** - React framework for web applications
+- **[React](https://react.dev/)** 19.2.4 - UI library
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[SWR](https://swr.vercel.app/)** - Data fetching and caching
+- **[ESLint](https://eslint.org/)** - Code linting
+- **[Prettier](https://prettier.io)** - Code formatting
+
+## Repository Structure
+
+The monorepo is organized into apps and packages:
+
+### Applications
+
+- **console** - Main Openlane Console application ([console.theopenlane.io](https://console.theopenlane.io/))
+- **storybook** - Component library documentation ([storybook.theopenlane.io](https://storybook.theopenlane.io/))
+
+### Packages
+
+- **@repo/codegen** - Generated GraphQL functions for API requests
+- **@repo/ui** - Shared UI component library
+- **@repo/dally** - DAL library for common patterns
+- **@repo/eslint-config** - ESLint configurations
+- **@repo/config-typescript** - Shared TypeScript configs
+- **@repo/tailwind-config** - Shared Tailwind configuration
+
+## Environment Configuration
+
+The project uses environment variables for configuration. Turborepo v2 requires the `.env` file to live in the app directory.
+
+```bash
+cp ./config/.env.example ./apps/console/.env
+```
+
+Review and update the environment variables based on your needs. Key variables include:
+
+- `NEXT_PUBLIC_OPENLANE_URL` - Backend API URL (default: `http://localhost:17608`)
+- `NEXT_PUBLIC_API_GQL_URL` - GraphQL API endpoint
+- `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` - GitHub OAuth credentials
+- `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` - Google OAuth credentials
+- `NEXT_PUBLIC_ALLOWED_LOGIN_DOMAINS` - Allowed email domains for login (leave empty for all)
+
+<Note>
+  For local development, you can leave `NEXT_PUBLIC_ALLOWED_LOGIN_DOMAINS` empty to allow all email domains.
+</Note>
+
+## Backend Setup
+
+The Openlane UI console communicates with the [Openlane Core](https://github.com/theopenlane/core) backend API.
+
+To run the full stack locally, you'll need to set up the backend. See the [Core repository README](https://github.com/theopenlane/core#development) for instructions.
+
+## Verification
+
+Verify your setup by running:
+
+```bash
+task --list
+```
+
+You should see a list of available tasks. If this works, your environment is ready!
+
+## Next Steps
+
+Now that your environment is set up:
+
+- [Run the applications locally](/development/running-locally)
+- [Build the project](/development/building)
+- [Read the contributing guide](/development/contributing)

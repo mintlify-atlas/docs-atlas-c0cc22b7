@@ -1,0 +1,283 @@
+---
+title: Input
+description: A flexible text input component with support for icons, prefixes, and multiple variants.
+---
+
+## Overview
+
+The Input component is a customizable form input that supports icons, prefixes, suffixes, and various visual styles. It maintains focus state and integrates seamlessly with form libraries.
+
+## Import
+
+```tsx
+import { Input } from '@repo/ui/input'
+```
+
+## Usage
+
+### Basic Input
+
+```tsx
+import { Input } from '@repo/ui/input'
+
+export default function Example() {
+  return <Input placeholder="Email" type="email" />
+}
+```
+
+### With Icon
+
+```tsx
+import { Input } from '@repo/ui/input'
+import { SearchIcon } from 'lucide-react'
+
+export default function Example() {
+  return (
+    <Input 
+      placeholder="Search for an organization" 
+      icon={<SearchIcon width={17} />}
+    />
+  )
+}
+```
+
+### With Prefix
+
+```tsx
+import { Input } from '@repo/ui/input'
+
+export default function Example() {
+  return (
+    <Input 
+      placeholder="yourdomain"
+      prefix="https://"
+    />
+  )
+}
+```
+
+### With Suffix
+
+```tsx
+import { Input } from '@repo/ui/input'
+
+export default function Example() {
+  return (
+    <Input 
+      placeholder="Enter value"
+      suffix="USD"
+    />
+  )
+}
+```
+
+## Props
+
+<ParamField path="icon" type="ReactNode">
+  Icon element to display within the input field.
+</ParamField>
+
+<ParamField path="iconPosition" type="string" default="right">
+  Position of the icon within the input.
+  
+  Options: `left`, `right`
+</ParamField>
+
+<ParamField path="prefix" type="ReactNode">
+  Prefix element to display at the start of the input (e.g., "https://").
+</ParamField>
+
+<ParamField path="suffix" type="string">
+  Suffix text to display at the end of the input (e.g., "USD", "kg").
+</ParamField>
+
+<ParamField path="variant" type="string">
+  Visual style variant of the input.
+  
+  Options: `medium`, `light`, `searchTable`
+</ParamField>
+
+<ParamField path="onIconClick" type="() => void">
+  Callback function triggered when the icon is clicked.
+</ParamField>
+
+<ParamField path="maxWidth" type="boolean">
+  When true, sets the input to take full width (w-full).
+</ParamField>
+
+<ParamField path="type" type="string">
+  HTML input type attribute.
+  
+  Examples: `text`, `email`, `password`, `number`, `tel`, `url`
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  Placeholder text displayed when the input is empty.
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  When true, disables the input and applies disabled styles.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the input element.
+</ParamField>
+
+<ParamField path="onFocus" type="(e: FocusEvent) => void">
+  Callback function triggered when the input receives focus.
+</ParamField>
+
+<ParamField path="onBlur" type="(e: FocusEvent) => void">
+  Callback function triggered when the input loses focus.
+</ParamField>
+
+## Variants
+
+### Medium
+
+```tsx
+<Input variant="medium" placeholder="Email" />
+```
+
+Fixed width input (280px) suitable for form fields.
+
+### Light
+
+```tsx
+<Input variant="light" placeholder="Search" />
+```
+
+Light background variant for use on dark backgrounds.
+
+### Search Table
+
+```tsx
+<Input variant="searchTable" placeholder="Search..." />
+```
+
+Compact variant optimized for table search interfaces.
+
+## Examples
+
+### Search Input
+
+```tsx
+import { Input } from '@repo/ui/input'
+import { SearchIcon } from 'lucide-react'
+
+export default function Example() {
+  return (
+    <Input 
+      type="text"
+      placeholder="Search for an organization" 
+      icon={<SearchIcon width={17} />}
+      maxWidth
+    />
+  )
+}
+```
+
+### URL Input with Prefix
+
+```tsx
+import { Input } from '@repo/ui/input'
+
+export default function Example() {
+  return (
+    <Input 
+      type="url"
+      placeholder="yourdomain"
+      prefix="https://"
+      maxWidth
+    />
+  )
+}
+```
+
+### Clickable Icon
+
+```tsx
+import { useState } from 'react'
+import { Input } from '@repo/ui/input'
+import { EyeIcon, EyeOffIcon } from 'lucide-react'
+
+export default function Example() {
+  const [showPassword, setShowPassword] = useState(false)
+  
+  return (
+    <Input 
+      type={showPassword ? 'text' : 'password'}
+      placeholder="Enter password"
+      icon={showPassword ? <EyeOffIcon /> : <EyeIcon />}
+      onIconClick={() => setShowPassword(!showPassword)}
+    />
+  )
+}
+```
+
+### With Form Validation
+
+```tsx
+import { Input } from '@repo/ui/input'
+import { Form, FormField, FormControl, FormMessage } from '@repo/ui/form'
+import { useForm } from 'react-hook-form'
+
+export default function Example() {
+  const form = useForm()
+  
+  return (
+    <Form {...form}>
+      <FormField
+        control={form.control}
+        name="email"
+        render={({ field }) => (
+          <FormControl>
+            <Input 
+              {...field}
+              type="email"
+              placeholder="Email"
+            />
+          </FormControl>
+        )}
+      />
+      <FormMessage />
+    </Form>
+  )
+}
+```
+
+## InputRow
+
+The `InputRow` component provides a wrapper for displaying multiple inputs in a horizontal layout.
+
+```tsx
+import { Input, InputRow } from '@repo/ui/input'
+
+export default function Example() {
+  return (
+    <InputRow>
+      <Input placeholder="First Name" />
+      <Input placeholder="Last Name" />
+    </InputRow>
+  )
+}
+```
+
+## Features
+
+- **Focus State**: Automatically applies brand color border on focus
+- **Icon Support**: Display icons on left or right with optional click handlers
+- **Prefix/Suffix**: Add contextual prefixes (URLs) or suffixes (units)
+- **Responsive**: Adapts padding based on prefix width
+- **Accessible**: Maintains standard HTML input attributes and events
+
+## Accessibility
+
+- Maintains all standard HTML input attributes
+- Properly handles focus and blur events
+- Icon click handlers use pointer cursor for discoverability
+- Disabled state uses `cursor-not-allowed` and reduced opacity
+
+## Source
+
+View source: `packages/ui/src/input/input.tsx`

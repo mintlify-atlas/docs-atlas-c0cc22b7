@@ -1,0 +1,262 @@
+---
+title: Running Locally
+description: Run Openlane UI applications in development mode
+---
+
+This guide covers how to run the Openlane UI applications locally for development.
+
+## Quick Start
+
+The fastest way to get started is to run all applications simultaneously:
+
+```bash
+task dev
+```
+
+This command will:
+1. Install dependencies if needed
+2. Start all applications in parallel (console and storybook)
+3. Enable hot module replacement for instant updates
+
+## Running Individual Applications
+
+You can run specific applications instead of all apps at once:
+
+<CodeGroup>
+
+```bash Console App
+task dev:console
+```
+
+```bash Storybook
+task dev:storybook
+```
+
+</CodeGroup>
+
+### Console Application
+
+The console app runs on `http://localhost:3001` by default.
+
+```bash
+task dev:console
+```
+
+This command:
+- Installs dependencies
+- Runs `bun dev --filter={apps/console}`
+- Starts the Next.js development server with hot reload
+
+<Note>
+  The console requires the [Openlane Core](https://github.com/theopenlane/core) backend to be running. See the [setup guide](/development/setup#backend-setup) for details.
+</Note>
+
+### Storybook Application
+
+The storybook app provides isolated component development and documentation.
+
+```bash
+task dev:storybook
+```
+
+This command:
+- Installs dependencies
+- Runs `bun dev --filter={apps/storybook}`
+- Starts the Storybook development server
+
+## Using NPM Scripts Directly
+
+You can also use the scripts defined in `package.json`:
+
+<CodeGroup>
+
+```bash All Apps (Parallel)
+bun dev
+```
+
+```bash Turbo Dev Mode
+turbo dev --parallel
+```
+
+```bash Debug Mode
+bun run debug
+```
+
+</CodeGroup>
+
+### Debug Mode
+
+For debugging with additional information:
+
+```bash
+task build:dev
+```
+
+This builds the console in development mode with debug info enabled.
+
+## Development Workflow
+
+<Steps>
+  <Step title="Environment Setup">
+    Ensure your `.env` file is configured:
+    
+    ```bash
+    cp ./config/.env.example ./apps/console/.env
+    ```
+    
+    Update environment variables as needed for your local setup.
+  </Step>
+
+  <Step title="Backend Connection">
+    Start the Openlane Core backend (see [backend setup](/development/setup#backend-setup)):
+    
+    The default configuration expects the backend at:
+    - REST API: `http://localhost:17608`
+    - GraphQL: `http://localhost:17608/query`
+  </Step>
+
+  <Step title="Start Development Server">
+    Choose your preferred method:
+    
+    <CodeGroup>
+    
+    ```bash All Apps
+    task dev
+    ```
+    
+    ```bash Console Only
+    task dev:console
+    ```
+    
+    ```bash Storybook Only
+    task dev:storybook
+    ```
+    
+    </CodeGroup>
+  </Step>
+
+  <Step title="Access Applications">
+    Open your browser to:
+    - Console: `http://localhost:3001`
+    - Storybook: Check terminal output for port (typically `http://localhost:6006`)
+  </Step>
+</Steps>
+
+## Hot Module Replacement
+
+All development servers support hot module replacement (HMR):
+
+- Edit any TypeScript, TSX, or CSS file
+- Changes are reflected immediately in the browser
+- React state is preserved when possible
+- No manual refresh needed
+
+## Turborepo Features
+
+The monorepo uses Turborepo for efficient development:
+
+- **Parallel execution** - Multiple apps run simultaneously
+- **Smart caching** - Unchanged code isn't rebuilt
+- **Dependency awareness** - Packages rebuild when dependencies change
+
+## Common Issues
+
+### Port Already in Use
+
+If port 3001 is already in use:
+
+```bash
+# Find and kill the process
+lsof -ti:3001 | xargs kill -9
+```
+
+### Cannot Login with Test User
+
+If you cannot login with a test user created by the backend setup:
+
+1. Check your `.env` file for `NEXT_PUBLIC_ALLOWED_LOGIN_DOMAINS`
+2. Either set it to include your test email domain, or leave it empty to allow all domains:
+
+```bash
+# Allow all domains
+NEXT_PUBLIC_ALLOWED_LOGIN_DOMAINS=
+
+# Or specify allowed domains
+NEXT_PUBLIC_ALLOWED_LOGIN_DOMAINS=example.com,test.com
+```
+
+### Stale Dependencies
+
+If you encounter dependency issues:
+
+```bash
+task reinstall
+```
+
+This will:
+- Clean all node_modules and build artifacts
+- Update Turborepo
+- Run turbo clean
+- Reinstall all dependencies
+
+### Environment Variables Not Loading
+
+Remember that Turborepo v2 requires `.env` files in the app directory:
+
+```bash
+# Correct location
+apps/console/.env
+
+# Not here (won't work with Turborepo v2)
+.env
+```
+
+## Type Checking During Development
+
+Run type checking across all packages:
+
+```bash
+bun run type-check
+```
+
+Or using Turborepo directly:
+
+```bash
+turbo type-check
+```
+
+## Linting During Development
+
+Run ESLint checks:
+
+<CodeGroup>
+
+```bash All Packages
+task lint
+```
+
+```bash Console Only
+task lint apps/console/src
+```
+
+```bash Auto-fix Issues
+task lint --fix
+```
+
+</CodeGroup>
+
+## Code Formatting
+
+Format code with Prettier:
+
+```bash
+bun run format
+```
+
+This formats all TypeScript, TSX, and Markdown files in the repository.
+
+## Next Steps
+
+- [Build for production](/development/building)
+- [Contributing guidelines](/development/contributing)
+- [GraphQL code generation](/api/graphql-codegen)

@@ -1,0 +1,571 @@
+---
+title: 'Theming with Tailwind v4'
+description: 'Customize the component library with Tailwind CSS v4 design tokens and CSS variables'
+icon: 'palette'
+---
+
+## Overview
+
+The `@repo/ui` component library uses Tailwind CSS v4 with a comprehensive design token system. All components support theming through CSS variables, enabling both light and dark modes with easy customization.
+
+## Design Token System
+
+The library defines design tokens using CSS variables in `@theme` blocks. These tokens are automatically mapped to Tailwind utilities.
+
+### Color Tokens
+
+The component library uses semantic color tokens that adapt to light and dark modes:
+
+<Tabs>
+  <Tab title="Light Mode">
+    ```css
+    @theme {
+      --background: #eff4f5;
+      --foreground: #09151d;
+      --card: #f4f9fa;
+      --popover: #ffffff;
+      --primary: #2dcdad;
+      --primary-foreground: hsl(191 72% 9%);
+      --secondary: #ffffff;
+      --muted: #ffffff;
+      --muted-foreground: #6b7682;
+      --accent: #f4f9fa;
+      --destructive: hsl(0 69% 60%);
+      --border: hsl(198 26% 89%);
+      --input: #ffffff;
+      --ring: hsl(168 64% 49%);
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Dark Mode">
+    ```css
+    .dark {
+      --background: #09151d;
+      --foreground: #ffffff;
+      --card: #233440;
+      --popover: #233440;
+      --primary: hsl(168 64% 49%);
+      --secondary: #162431;
+      --muted: #4c5e69;
+      --muted-foreground: #9aa5b0;
+      --accent: #162431;
+      --destructive: hsl(0 84% 64%);
+      --border: hsl(208 21% 24%);
+      --input: #09151d;
+      --ring: hsl(168 64% 49%);
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Button Tokens
+
+Special tokens for button variants:
+
+```css
+@theme {
+  /* Light Mode */
+  --color-btn-primary: #9af5dc;
+  --color-btn-primary-text: #052e2a;
+  --color-btn-primary-hover: #60e8c8;
+  
+  --color-btn-secondary: #ffffff;
+  --color-btn-secondary-text: #09151d;
+  --color-btn-secondary-hover: #ffffff;
+}
+
+.dark {
+  /* Dark Mode */
+  --color-btn-primary: #60e8c9;
+  --color-btn-primary-hover: #9af5dd;
+  
+  --color-btn-secondary: #394b58;
+  --color-btn-secondary-hover: #4c5e69;
+  --color-btn-secondary-text: #ffffff;
+}
+```
+
+## Tailwind CSS v4 Configuration
+
+The library uses Tailwind v4's new `@theme` directive and inline source scanning:
+
+```css src/styles.css
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/* Scan source files for classes */
+@source "../../../packages/ui/src/**/*.{js,ts,jsx,tsx}";
+
+/* Define dark mode variant */
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'outfit', 'outfit Fallback';
+  --background: #eff4f5;
+  --foreground: #09151d;
+  /* ... more tokens */
+}
+```
+
+### PostCSS Configuration
+
+Minimal PostCSS setup for Tailwind v4:
+
+```js postcss.config.mjs
+export default {
+  plugins: {
+    '@tailwindcss/postcss': {},
+  },
+}
+```
+
+## Customizing Colors
+
+### Method 1: Override CSS Variables
+
+Override design tokens in your app's CSS:
+
+```css app/globals.css
+@import '@repo/ui/styles.css';
+
+@theme {
+  /* Override primary color */
+  --primary: #10b981;
+  --primary-foreground: #ffffff;
+  
+  /* Override button colors */
+  --color-btn-primary: #10b981;
+  --color-btn-primary-hover: #059669;
+}
+
+.dark {
+  --primary: #34d399;
+  --color-btn-primary: #34d399;
+  --color-btn-primary-hover: #10b981;
+}
+```
+
+### Method 2: Extend with Tailwind Classes
+
+Add custom classes alongside component variants:
+
+```tsx
+import { Button } from '@repo/ui/button'
+
+export function CustomButton() {
+  return (
+    <Button 
+      variant="primary"
+      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+    >
+      Gradient Button
+    </Button>
+  )
+}
+```
+
+### Method 3: Create Custom Variants
+
+Extend component variants using CVA:
+
+```tsx
+import { cva } from 'class-variance-authority'
+import { Button } from '@repo/ui/button'
+import { cn } from '@repo/ui/lib/utils'
+
+const customButtonVariants = cva('', {
+  variants: {
+    customVariant: {
+      brand: 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white',
+      outline: 'border-2 border-blue-600 text-blue-600 bg-transparent',
+    },
+  },
+})
+
+export function CustomButton({ customVariant, className, ...props }) {
+  return (
+    <Button
+      className={cn(customButtonVariants({ customVariant }), className)}
+      {...props}
+    />
+  )
+}
+```
+
+## Dark Mode
+
+### Enabling Dark Mode
+
+Dark mode is enabled by adding the `dark` class to a parent element:
+
+```tsx app/layout.tsx
+import { useState } from 'react'
+
+export default function RootLayout({ children }) {
+  const [isDark, setIsDark] = useState(false)
+  
+  return (
+    <html className={isDark ? 'dark' : ''}>
+      <body>
+        <button onClick={() => setIsDark(!isDark)}>
+          Toggle Dark Mode
+        </button>
+        {children}
+      </body>
+    </html>
+  )
+}
+```
+
+### System Preference Detection
+
+Detect and respect system color scheme:
+
+```tsx app/theme-provider.tsx
+'use client'
+
+import { createContext, useContext, useEffect, useState } from 'react'
+
+type Theme = 'light' | 'dark' | 'system'
+
+const ThemeContext = createContext<{
+  theme: Theme
+  setTheme: (theme: Theme) => void
+}>({
+  theme: 'system',
+  setTheme: () => {},
+})
+
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState<Theme>('system')
+  
+  useEffect(() => {
+    const root = window.document.documentElement
+    root.classList.remove('light', 'dark')
+    
+    if (theme === 'system') {
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light'
+      root.classList.add(systemTheme)
+    } else {
+      root.classList.add(theme)
+    }
+  }, [theme])
+  
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  )
+}
+
+export const useTheme = () => useContext(ThemeContext)
+```
+
+## Semantic Color System
+
+The library includes semantic colors for status and feedback:
+
+### Status Colors
+
+```css
+@theme inline {
+  /* Status colors */
+  --color-success: #21c55d;
+  --color-info: #6392ff;
+  --color-warning: #ff842c;
+  --color-danger: #f45b50;
+  
+  /* Task statuses */
+  --color-task-completed: #21c55d;
+  --color-task-in-progress: #6392ff;
+  --color-task-in-review: #ff842c;
+  --color-task-open: #8f46f5;
+  
+  /* Document statuses */
+  --color-document-draft: #6392ff;
+  --color-document-approved: #21c55d;
+  --color-document-needs-approval: #ff842c;
+  --color-document-archived: #f45b50;
+}
+```
+
+### Using Semantic Colors
+
+```tsx
+import { Badge } from '@repo/ui/badge'
+
+export function StatusBadge({ status }) {
+  const variants = {
+    success: 'green',
+    info: 'blue',
+    warning: 'gold',
+    error: 'destructive',
+  }
+  
+  return (
+    <Badge variant={variants[status]}>
+      {status}
+    </Badge>
+  )
+}
+```
+
+## Custom Animations
+
+The library includes custom animations via `tw-animate-css`:
+
+```css
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+```
+
+Use animations with Tailwind classes:
+
+```tsx
+<div className="animate-fadeIn">
+  Fading in content
+</div>
+```
+
+## Typography
+
+The library uses the Outfit font family:
+
+```css
+@theme {
+  --font-sans: 'outfit', 'outfit Fallback';
+}
+```
+
+Apply typography in your app:
+
+```tsx
+<div className="font-sans">
+  <h1 className="text-4xl font-bold text-foreground">Heading</h1>
+  <p className="text-base text-muted-foreground">Body text</p>
+</div>
+```
+
+## Border Radius
+
+Consistent border radius:
+
+```css
+@theme {
+  --radius: 0.5rem;
+}
+```
+
+Use in components:
+
+```tsx
+<div className="rounded-lg"> {/* Uses --radius */}
+  Content
+</div>
+```
+
+## Gradient Borders
+
+The library includes special gradient border styles for buttons:
+
+```css
+.btn-primary::before {
+  background: linear-gradient(
+    to bottom,
+    var(--color-gradient-border-primary-from),
+    var(--color-gradient-border-primary-to)
+  );
+}
+```
+
+These are automatically applied to button variants.
+
+## Custom Utilities
+
+The library provides custom utility classes:
+
+```css
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .text-paragraph {
+    color: var(--color-text-paragraph);
+  }
+}
+```
+
+Usage:
+
+```tsx
+<div className="overflow-auto no-scrollbar">
+  Scrollable content without scrollbar
+</div>
+```
+
+## Complete Theme Example
+
+Here's a complete example of customizing the theme:
+
+<CodeGroup>
+  ```css app/theme.css
+  @import '@repo/ui/styles.css';
+  
+  /* Custom brand colors */
+  @theme {
+    --primary: #6366f1;
+    --primary-foreground: #ffffff;
+    
+    --color-btn-primary: #6366f1;
+    --color-btn-primary-hover: #4f46e5;
+    --color-btn-primary-text: #ffffff;
+    
+    --border: #e2e8f0;
+    --radius: 0.75rem;
+  }
+  
+  .dark {
+    --primary: #818cf8;
+    --color-btn-primary: #818cf8;
+    --color-btn-primary-hover: #a5b4fc;
+    --border: #334155;
+  }
+  ```
+  
+  ```tsx app/layout.tsx
+  import './theme.css'
+  import { ThemeProvider } from './theme-provider'
+  import { Toaster } from '@repo/ui/toaster'
+  
+  export default function RootLayout({ children }) {
+    return (
+      <html suppressHydrationWarning>
+        <body>
+          <ThemeProvider>
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </body>
+      </html>
+    )
+  }
+  ```
+  
+  ```tsx app/page.tsx
+  import { Button } from '@repo/ui/button'
+  import { Input } from '@repo/ui/input'
+  import { useTheme } from './theme-provider'
+  
+  export default function Page() {
+    const { theme, setTheme } = useTheme()
+    
+    return (
+      <div className="p-8 space-y-4">
+        <div className="flex gap-2">
+          <Button onClick={() => setTheme('light')}>Light</Button>
+          <Button onClick={() => setTheme('dark')}>Dark</Button>
+          <Button onClick={() => setTheme('system')}>System</Button>
+        </div>
+        
+        <Button variant="primary">Custom Primary Button</Button>
+        <Input placeholder="Themed input" />
+      </div>
+    )
+  }
+  ```
+</CodeGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Semantic Tokens">
+    Prefer semantic color tokens over hardcoded values:
+    
+    ```tsx
+    // Good
+    <div className="bg-primary text-primary-foreground">
+    
+    // Avoid
+    <div className="bg-blue-500 text-white">
+    ```
+  </Accordion>
+  
+  <Accordion title="Maintain Dark Mode Support">
+    Always test customizations in both light and dark modes:
+    
+    ```css
+    @theme {
+      --custom-color: #3b82f6;
+    }
+    
+    .dark {
+      --custom-color: #60a5fa;
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Extend, Don't Override">
+    Use className to extend rather than override:
+    
+    ```tsx
+    // Good - Extends base styles
+    <Button variant="primary" className="shadow-lg">
+    
+    // Avoid - May conflict with base styles
+    <Button className="bg-blue-500 text-white px-4 py-2">
+    ```
+  </Accordion>
+  
+  <Accordion title="Keep Tokens Consistent">
+    Use existing design tokens for consistency:
+    
+    ```tsx
+    // Good - Uses design system
+    <div className="rounded-lg border-border">
+    
+    // Avoid - Arbitrary values
+    <div className="rounded-[12px] border-gray-300">
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Component Overview" icon="box" href="/components/overview">
+    Explore all themed components
+  </Card>
+  
+  <Card title="Usage Guide" icon="code" href="/components/usage">
+    Learn component usage patterns
+  </Card>
+  
+  <Card title="Storybook" icon="book" href="/components/storybook">
+    See components with different themes
+  </Card>
+  
+  <Card title="Installation" icon="download" href="/components/installation">
+    Setup guide for theming
+  </Card>
+</CardGroup>

@@ -1,0 +1,375 @@
+---
+title: Building
+description: Build commands and production compilation for Openlane UI
+---
+
+This guide covers building Openlane UI for production and understanding the build process.
+
+## Quick Build
+
+To build all apps and packages for production:
+
+```bash
+task build
+```
+
+This runs `bun run build` which uses Turborepo to build all packages and applications in the correct order.
+
+## Build Process
+
+The build system uses [Turborepo](https://turbo.build/repo/) to orchestrate builds across the monorepo:
+
+<Steps>
+  <Step title="Dependency Resolution">
+    Turborepo analyzes the dependency graph and determines the build order.
+  </Step>
+
+  <Step title="Package Builds">
+    Internal packages are built first (in order):
+    - `@repo/config-typescript`
+    - `@repo/eslint-config`
+    - `@repo/tailwind-config`
+    - `@repo/codegen`
+    - `@repo/dally`
+    - `@repo/ui`
+  </Step>
+
+  <Step title="Application Builds">
+    Applications are built after their dependencies:
+    - `console` - Next.js production build
+    - `storybook` - Static Storybook site
+  </Step>
+
+  <Step title="Output Generation">
+    Build artifacts are generated:
+    - `.next/` - Next.js production output
+    - `dist/` - Package builds
+    - `storybook-static/` - Static Storybook files
+  </Step>
+</Steps>
+
+## Build Commands
+
+### Using Task Runner
+
+<CodeGroup>
+
+```bash Production Build
+task build
+```
+
+```bash Development Build (Console)
+task build:dev
+```
+
+```bash Install Then Build
+task install
+task build
+```
+
+</CodeGroup>
+
+### Using Bun Directly
+
+<CodeGroup>
+
+```bash Standard Build
+bun run build
+```
+
+```bash Turbo Build
+turbo build
+```
+
+```bash Debug Build
+bun run debug
+```
+
+</CodeGroup>
+
+## Build Outputs
+
+After a successful build, you'll find:
+
+### Applications
+
+- **Console**: `apps/console/.next/` - Next.js optimized production build
+- **Storybook**: `apps/storybook/storybook-static/` - Static HTML/CSS/JS files
+
+### Packages
+
+- **All packages**: `packages/*/dist/` - Compiled JavaScript and type definitions
+
+<Note>
+  Build artifacts are excluded from the Turborepo cache using the outputs configuration in `turbo.json`. The `.next/cache/**` directory is specifically excluded to prevent cache bloat.
+</Note>
+
+## Environment Variables for Builds
+
+The build process uses environment variables defined in your `.env` file. Key variables include:
+
+### Required for Builds
+
+```bash
+# API Configuration
+API_REST_URL=http://localhost:17608
+NEXT_PUBLIC_OPENLANE_URL=http://localhost:17608
+NEXT_PUBLIC_API_GQL_URL=http://localhost:17608/query
+```
+
+### Authentication
+
+```bash
+AUTH_GITHUB_ID=your_github_client_id
+AUTH_GITHUB_SECRET=your_github_secret
+AUTH_GOOGLE_ID=your_google_client_id
+AUTH_GOOGLE_SECRET=your_google_secret
+SESSION_COOKIE_NAME=temporary-cookie
+NEXT_PUBLIC_ALLOWED_LOGIN_DOMAINS=
+```
+
+### Optional Features
+
+```bash
+# Billing
+STRIPE_SECRET_KEY=your_stripe_key
+
+# Analytics
+PIRSCH_SECRET=your_pirsch_secret
+PIRSCH_CLIENT_ID=your_pirsch_client_id
+
+# AI Features
+NEXT_PUBLIC_AI_SUGGESTIONS_ENABLED=false
+GOOGLE_AI_PROJECT_ID=your_project_id
+GOOGLE_AI_REGION=us-central1
+```
+
+<Note>
+  See `turbo.json` for the complete list of environment variables used during builds. Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle.
+</Note>
+
+## Build Optimization
+
+Turborepo provides several optimizations:
+
+### Dependency-Based Builds
+
+Packages are built based on their dependencies:
+
+```json
+"build": {
+  "dependsOn": ["^build"]
+}
+```
+
+The `^` prefix means "dependencies' build tasks must complete first".
+
+### Caching
+
+Turborepo caches build outputs. Subsequent builds are instant if nothing changed:
+
+```bash
+# First build
+task build  # Takes 2-3 minutes
+
+# Second build (no changes)
+task build  # Completes in seconds (cache hit)
+```
+
+### Parallel Execution
+
+Independent packages build in parallel for faster builds.
+
+## Build Variants
+
+### Production Build
+
+Optimized for deployment:
+
+```bash
+task build
+```
+
+Features:
+- Minified JavaScript
+- Optimized images
+- Tree-shaken dependencies
+- Source maps (for debugging)
+
+### Development Build
+
+Includes debugging information:
+
+```bash
+task build:dev
+```
+
+Runs in the console directory with debug mode enabled.
+
+## Cleaning Build Artifacts
+
+### Clean Everything
+
+Remove all build artifacts and dependencies:
+
+```bash
+task clean
+```
+
+This removes:
+- All `node_modules/` directories
+- `apps/console/.next/`
+- `apps/storybook/.next/`
+- App-specific `node_modules/`
+
+### Turbo Clean
+
+Clean only Turborepo cache:
+
+```bash
+bun run turbo-clean
+```
+
+### Complete Reinstall
+
+Clean and reinstall everything:
+
+```bash
+task reinstall
+```
+
+This:
+1. Runs `task clean`
+2. Installs latest Turborepo
+3. Runs `turbo-clean`
+4. Reinstalls all dependencies
+
+## Type Checking
+
+Run TypeScript type checking across all packages:
+
+```bash
+bun run type-check
+```
+
+Or with Turborepo:
+
+```bash
+turbo type-check
+```
+
+This validates types without emitting build output.
+
+## Linting
+
+Run ESLint across all packages:
+
+<CodeGroup>
+
+```bash All Packages
+bun run lint
+```
+
+```bash Turbo Lint
+turbo run lint
+```
+
+```bash Console Only
+task lint apps/console/src
+```
+
+</CodeGroup>
+
+The lint configuration is shared via `@repo/eslint-config` and enforces:
+- TypeScript best practices
+- React and React Hooks rules
+- Import ordering
+- Accessibility (jsx-a11y)
+- TSDoc comments
+
+## Formatting
+
+Format code before building:
+
+```bash
+bun run format
+```
+
+This runs Prettier on all TypeScript, TSX, and Markdown files with Tailwind CSS plugin support.
+
+## Pre-commit Checks
+
+Run all pre-commit checks (lint, format, type-check):
+
+```bash
+task precommit-full
+```
+
+This:
+1. Installs pre-commit hooks
+2. Updates hooks to latest versions
+3. Runs all checks on all files
+
+## Build Troubleshooting
+
+### Out of Memory Errors
+
+Increase Node.js memory limit:
+
+```bash
+NODE_OPTIONS="--max-old-space-size=4096" task build
+```
+
+### Stale Cache Issues
+
+Clear Turborepo cache:
+
+```bash
+task turbo-clean
+task build
+```
+
+### Dependency Conflicts
+
+Reinstall dependencies:
+
+```bash
+task reinstall
+```
+
+### Build Failures After Git Pull
+
+Dependencies may have changed:
+
+```bash
+task install
+task build
+```
+
+## CI/CD Builds
+
+For continuous integration environments:
+
+```bash
+# Install dependencies
+bun install --frozen-lockfile
+
+# Run type checking
+bun run type-check
+
+# Run linting
+bun run lint
+
+# Build all packages
+bun run build
+```
+
+<Note>
+  Use `--frozen-lockfile` in CI to ensure exact dependency versions and fail if `bun.lockb` is out of date.
+</Note>
+
+## Next Steps
+
+- [Development setup](/development/setup)
+- [Running locally](/development/running-locally)
+- [Contributing guidelines](/development/contributing)

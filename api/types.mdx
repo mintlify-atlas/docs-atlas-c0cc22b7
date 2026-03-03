@@ -1,0 +1,414 @@
+---
+title: TypeScript Types
+description: Type definitions, interfaces, and type utilities for Openlane UI
+---
+
+## Overview
+
+Openlane UI is fully typed with TypeScript, providing comprehensive type definitions for all components, utilities, and hooks.
+
+## Chart Types
+
+### ColorUtility
+
+Utility types for chart colors.
+
+**Location:** `packages/ui/lib/chartUtils.tsx:1`
+
+```typescript
+type ColorUtility = 'bg' | 'stroke' | 'fill' | 'text'
+```
+
+**Usage:** Specifies which Tailwind utility class to retrieve for a color.
+
+### AvailableChartColorsKeys
+
+Available color keys for charts.
+
+**Location:** `packages/ui/lib/chartUtils.tsx:52`
+
+```typescript
+type AvailableChartColorsKeys = 'blue' | 'saffron' | 'jade' | 'pink' | 'purple' | 'red' | 'grey'
+```
+
+**Example:**
+```typescript
+import type { AvailableChartColorsKeys } from '@openlane/ui/lib/chartUtils'
+
+const primaryColor: AvailableChartColorsKeys = 'blue'
+const secondaryColor: AvailableChartColorsKeys = 'jade'
+```
+
+## Pagination Types
+
+### TPaginationQuery
+
+Cursor-based pagination query parameters.
+
+**Location:** `packages/ui/src/pagination/types.ts:1`
+
+```typescript
+type TPaginationQuery = {
+  first?: number
+  after?: string | null
+  last?: number
+  before?: string | null
+}
+```
+
+**Properties:**
+- `first` - Number of items to fetch from the start
+- `after` - Cursor to fetch items after
+- `last` - Number of items to fetch from the end
+- `before` - Cursor to fetch items before
+
+**Example:**
+```typescript
+import type { TPaginationQuery } from '@openlane/ui/src/pagination/types'
+
+const query: TPaginationQuery = {
+  first: 10,
+  after: 'cursor-123',
+}
+
+fetchItems(query)
+```
+
+### TPagination
+
+Combined pagination state.
+
+**Location:** `packages/ui/src/pagination/types.ts:8`
+
+```typescript
+type TPagination = {
+  page: number
+  pageSize: number
+  query: TPaginationQuery
+}
+```
+
+**Properties:**
+- `page` - Current page number (1-indexed)
+- `pageSize` - Number of items per page
+- `query` - Cursor-based query parameters
+
+**Example:**
+```typescript
+import type { TPagination } from '@openlane/ui/src/pagination/types'
+
+const pagination: TPagination = {
+  page: 1,
+  pageSize: 20,
+  query: {
+    first: 20,
+  },
+}
+```
+
+### TPageInfo
+
+Pagination metadata from GraphQL-style APIs.
+
+**Location:** `packages/ui/src/pagination/types.ts:14`
+
+```typescript
+type TPageInfo = {
+  endCursor?: any | null
+  startCursor?: any | null
+  hasNextPage?: boolean
+  hasPreviousPage?: boolean
+}
+```
+
+**Properties:**
+- `endCursor` - Cursor of the last item in the current page
+- `startCursor` - Cursor of the first item in the current page
+- `hasNextPage` - Whether more items exist after the current page
+- `hasPreviousPage` - Whether items exist before the current page
+
+### TPaginationMeta
+
+Complete pagination metadata including loading state.
+
+**Location:** `packages/ui/src/pagination/types.ts:21`
+
+```typescript
+type TPaginationMeta = {
+  totalCount?: number
+  pageInfo?: TPageInfo
+  isLoading?: boolean
+}
+```
+
+**Example:**
+```typescript
+import type { TPaginationMeta } from '@openlane/ui/src/pagination/types'
+
+const meta: TPaginationMeta = {
+  totalCount: 500,
+  pageInfo: {
+    hasNextPage: true,
+    hasPreviousPage: false,
+    endCursor: 'cursor-20',
+  },
+  isLoading: false,
+}
+```
+
+## File Upload Types
+
+### UploadedFile
+
+Metadata for an uploaded file.
+
+**Location:** `packages/ui/hooks/use-upload-file.ts:10`
+
+```typescript
+type UploadedFile<T = unknown> = ClientUploadedFileData<T>
+```
+
+**Properties:**
+- `key` - Unique file identifier
+- `name` - Original file name
+- `size` - File size in bytes
+- `type` - MIME type
+- `url` - Public URL to access the file
+- `appUrl` - Application-specific URL
+
+**Example:**
+```typescript
+import type { UploadedFile } from '@openlane/ui/hooks/use-upload-file'
+
+const handleUpload = (file: UploadedFile) => {
+  console.log(`Uploaded: ${file.name} (${file.size} bytes)`)
+  console.log(`URL: ${file.url}`)
+}
+```
+
+### UseUploadFileProps
+
+Configuration for the useUploadFile hook.
+
+**Location:** `packages/ui/hooks/use-upload-file.ts:12`
+
+```typescript
+interface UseUploadFileProps {
+  headers?: Record<string, string>
+  onUploadBegin?: (fileName: string) => void
+  onUploadProgress?: (progress: number) => void
+  onUploadComplete?: (file: UploadedFile) => void
+  onUploadError?: (error: unknown) => void
+  skipPolling?: boolean
+}
+```
+
+## Component Variant Types
+
+Openlane UI components use class-variance-authority for type-safe variants.
+
+### ButtonVariants
+
+```typescript
+import type { VariantProps } from 'class-variance-authority'
+import { buttonStyles } from '@openlane/ui/src/button/button.styles'
+
+type ButtonVariants = VariantProps<typeof buttonStyles>
+```
+
+**Available Variants:**
+- `variant` - Visual style variant
+- `size` - Size variant
+- `state` - Interaction state
+
+### InputVariants
+
+```typescript
+import type { VariantProps } from 'class-variance-authority'
+import { inputStyles } from '@openlane/ui/src/input/input.styles'
+
+type InputVariants = VariantProps<typeof inputStyles>
+```
+
+### BadgeVariants
+
+```typescript
+import type { VariantProps } from 'class-variance-authority'
+import { badgeVariants } from '@openlane/ui/src/badge/badge'
+
+type BadgeVariants = VariantProps<typeof badgeVariants>
+```
+
+## Editor Types
+
+### TPlateEditorStyleVariant
+
+Visual variants for the Plate editor.
+
+**Location:** `packages/ui/src/components/ui/editor.tsx:40`
+
+```typescript
+type TPlateEditorStyleVariant = 'default' | 'comment' | 'select' | 'demo' | null | undefined
+```
+
+### TPlateEditorVariants
+
+Functional variants for the Plate editor.
+
+**Location:** `packages/ui/src/components/editor/use-create-editor.ts:99`
+
+```typescript
+type TPlateEditorVariants = 'basic' | 'standard' | 'advanced' | 'minimal' | 'readonly'
+```
+
+**Variants:**
+- `basic` - Minimal formatting options
+- `standard` - Common formatting features
+- `advanced` - Full feature set including tables and embeds
+- `minimal` - Plain text only
+- `readonly` - View-only mode
+
+### TComment
+
+Comment data structure for collaborative editing.
+
+**Location:** `packages/ui/src/components/ui/comment.tsx:31`
+
+```typescript
+interface TComment {
+  id: string
+  value: MyValue
+  createdAt: number
+  userId: string
+  isResolved?: boolean
+}
+```
+
+## Data Table Types
+
+### SortCondition
+
+Sort configuration for data tables.
+
+**Location:** `packages/ui/src/data-table/data-table.tsx:80`
+
+```typescript
+type SortCondition<TField extends string> = {
+  field: TField
+  direction: 'asc' | 'desc'
+}
+```
+
+**Example:**
+```typescript
+import type { SortCondition } from '@openlane/ui/src/data-table/data-table'
+
+type UserFields = 'name' | 'email' | 'createdAt'
+
+const sortConfig: SortCondition<UserFields> = {
+  field: 'createdAt',
+  direction: 'desc',
+}
+```
+
+## Utility Types
+
+### ClassValue
+
+Accepted class name types for the `cn` utility.
+
+```typescript
+import type { ClassValue } from 'clsx'
+
+// ClassValue accepts:
+// - string: 'class-name'
+// - object: { 'class-name': boolean }
+// - array: ['class-1', { 'class-2': true }]
+// - null/undefined/false (ignored)
+```
+
+**Example:**
+```typescript
+import { cn } from '@openlane/ui/lib/utils'
+import type { ClassValue } from 'clsx'
+
+const getButtonClasses = (...classes: ClassValue[]) => {
+  return cn('base-button', ...classes)
+}
+
+const className = getButtonClasses(
+  'primary',
+  { 'is-active': true },
+  isDisabled && 'opacity-50'
+)
+```
+
+## Type Utility Patterns
+
+### Extracting Component Props
+
+Get props type from any component:
+
+```typescript
+import type { ComponentProps } from 'react'
+import { Button } from '@openlane/ui/src/button/button'
+
+type ButtonProps = ComponentProps<typeof Button>
+
+const config: ButtonProps = {
+  variant: 'primary',
+  size: 'md',
+  children: 'Click me',
+}
+```
+
+### Extending Component Props
+
+Extend built-in component props:
+
+```typescript
+import type { HTMLAttributes } from 'react'
+import type { VariantProps } from 'class-variance-authority'
+
+interface CustomComponentProps
+  extends HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof customStyles> {
+  label: string
+  icon?: React.ReactNode
+}
+```
+
+### Generic Type Parameters
+
+Use generic types for flexible APIs:
+
+```typescript
+import { useDebounce } from '@openlane/ui/hooks/use-debounce'
+
+// Type is inferred from the value
+const debouncedString = useDebounce('search', 300) // string
+const debouncedNumber = useDebounce(42, 300) // number
+const debouncedObject = useDebounce({ query: 'test' }, 300) // { query: string }
+```
+
+## Type Guards
+
+Create type guards for runtime type checking:
+
+```typescript
+import type { UploadedFile } from '@openlane/ui/hooks/use-upload-file'
+
+function isUploadedFile(value: unknown): value is UploadedFile {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'key' in value &&
+    'url' in value
+  )
+}
+
+const result = await uploadFile(file)
+if (isUploadedFile(result)) {
+  console.log(result.url) // TypeScript knows this is safe
+}
+```

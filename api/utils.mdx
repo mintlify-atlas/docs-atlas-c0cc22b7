@@ -1,0 +1,298 @@
+---
+title: Utility Functions
+description: Core utility functions for styling, charts, and window management
+---
+
+## Overview
+
+The Openlane UI library provides a collection of utility functions for common tasks including class name merging, chart color management, and window event handling.
+
+## Styling Utilities
+
+### cn
+
+Merges Tailwind CSS class names with support for conditional classes.
+
+**Location:** `packages/ui/lib/utils.ts:4`
+
+```typescript
+function cn(...inputs: ClassValue[]): string
+```
+
+**Parameters:**
+- `inputs` - Variable number of class values (strings, objects, arrays)
+
+**Returns:** Merged and deduplicated class name string
+
+**Example:**
+```tsx
+import { cn } from '@openlane/ui/lib/utils'
+
+const Button = ({ className, variant }) => (
+  <button className={cn(
+    'px-4 py-2 rounded',
+    variant === 'primary' && 'bg-blue-500',
+    className
+  )}>
+    Click me
+  </button>
+)
+```
+
+## Chart Utilities
+
+### chartColors
+
+Predefined color palette for charts with support for background, stroke, fill, and text utilities.
+
+**Location:** `packages/ui/lib/chartUtils.tsx:3`
+
+```typescript
+const chartColors: {
+  blue: { bg: string; stroke: string; fill: string; text: string }
+  saffron: { bg: string; stroke: string; fill: string; text: string }
+  jade: { bg: string; stroke: string; fill: string; text: string }
+  pink: { bg: string; stroke: string; fill: string; text: string }
+  purple: { bg: string; stroke: string; fill: string; text: string }
+  red: { bg: string; stroke: string; fill: string; text: string }
+  grey: { bg: string; stroke: string; fill: string; text: string }
+}
+```
+
+**Available Colors:**
+- `blue` - Primary blue color
+- `saffron` - Yellow/saffron color
+- `jade` - Green/jade color
+- `pink` - Pink color
+- `purple` - Purple color
+- `red` - Red color
+- `grey` - Gray color
+
+### constructCategoryColors
+
+Maps categories to chart colors in a round-robin fashion.
+
+**Location:** `packages/ui/lib/chartUtils.tsx:56`
+
+```typescript
+function constructCategoryColors(
+  categories: string[],
+  colors: AvailableChartColorsKeys[]
+): Map<string, AvailableChartColorsKeys>
+```
+
+**Parameters:**
+- `categories` - Array of category names
+- `colors` - Array of color keys to use
+
+**Returns:** Map of category names to color keys
+
+**Example:**
+```tsx
+import { constructCategoryColors, AvailableChartColors } from '@openlane/ui/lib/chartUtils'
+
+const categories = ['Revenue', 'Expenses', 'Profit']
+const colorMap = constructCategoryColors(categories, AvailableChartColors)
+
+// colorMap.get('Revenue') => 'blue'
+// colorMap.get('Expenses') => 'saffron'
+```
+
+### getColorClassName
+
+Retrieves the Tailwind class name for a specific color and utility type.
+
+**Location:** `packages/ui/lib/chartUtils.tsx:64`
+
+```typescript
+function getColorClassName(
+  color: AvailableChartColorsKeys,
+  type: ColorUtility
+): string
+```
+
+**Parameters:**
+- `color` - The color key (e.g., 'blue', 'saffron')
+- `type` - The utility type: 'bg' | 'stroke' | 'fill' | 'text'
+
+**Returns:** Tailwind class name string
+
+**Example:**
+```tsx
+import { getColorClassName } from '@openlane/ui/lib/chartUtils'
+
+const bgClass = getColorClassName('blue', 'bg')
+// Returns: 'bg-blue-400'
+
+const strokeClass = getColorClassName('jade', 'stroke')
+// Returns: 'stroke-jade-500'
+```
+
+### getYAxisDomain
+
+Calculates the Y-axis domain for charts with support for auto-scaling.
+
+**Location:** `packages/ui/lib/chartUtils.tsx:74`
+
+```typescript
+function getYAxisDomain(
+  autoMinValue: boolean,
+  minValue: number | undefined,
+  maxValue: number | undefined
+): [number | 'auto', number | 'auto']
+```
+
+**Parameters:**
+- `autoMinValue` - Whether to auto-calculate minimum value
+- `minValue` - Optional explicit minimum value
+- `maxValue` - Optional explicit maximum value
+
+**Returns:** Tuple of [min, max] domain values
+
+**Example:**
+```tsx
+import { getYAxisDomain } from '@openlane/ui/lib/chartUtils'
+
+// Auto-scale both axes
+const domain = getYAxisDomain(true, undefined, undefined)
+// Returns: ['auto', 'auto']
+
+// Fixed minimum, auto maximum
+const domain2 = getYAxisDomain(false, 0, undefined)
+// Returns: [0, 'auto']
+```
+
+### hasOnlyOneValueForKey
+
+Checks if all objects in an array have the same value for a specific key.
+
+**Location:** `packages/ui/lib/chartUtils.tsx:80`
+
+```typescript
+function hasOnlyOneValueForKey(array: any[], keyToCheck: string): boolean
+```
+
+**Parameters:**
+- `array` - Array of objects to check
+- `keyToCheck` - The key to compare across objects
+
+**Returns:** `true` if all objects have the same value for the key
+
+**Example:**
+```tsx
+import { hasOnlyOneValueForKey } from '@openlane/ui/lib/chartUtils'
+
+const data = [
+  { category: 'A', value: 10 },
+  { category: 'A', value: 20 },
+]
+
+hasOnlyOneValueForKey(data, 'category') // true
+hasOnlyOneValueForKey(data, 'value') // false
+```
+
+## Error Handling Utilities
+
+### getErrorMessage
+
+Extracts user-friendly error messages from various error types.
+
+**Location:** `packages/ui/hooks/use-upload-file.ts:95`
+
+```typescript
+function getErrorMessage(err: unknown): string
+```
+
+**Parameters:**
+- `err` - Error of any type (ZodError, Error, or unknown)
+
+**Returns:** Formatted error message string
+
+**Example:**
+```tsx
+import { getErrorMessage } from '@openlane/ui/hooks/use-upload-file'
+
+try {
+  // some operation
+} catch (error) {
+  const message = getErrorMessage(error)
+  console.error(message)
+}
+```
+
+### showErrorToast
+
+Displays an error message in a toast notification.
+
+**Location:** `packages/ui/hooks/use-upload-file.ts:111`
+
+```typescript
+function showErrorToast(err: unknown): string | number
+```
+
+**Parameters:**
+- `err` - Error of any type
+
+**Returns:** Toast ID for dismissal
+
+**Example:**
+```tsx
+import { showErrorToast } from '@openlane/ui/hooks/use-upload-file'
+
+try {
+  await uploadFile(file)
+} catch (error) {
+  showErrorToast(error)
+}
+```
+
+## Stream Processing Utilities
+
+### markdownJoinerTransform
+
+Transform stream for processing markdown chunks in AI-generated content.
+
+**Location:** `packages/ui/lib/markdown-joiner-transform.ts:9`
+
+```typescript
+function markdownJoinerTransform<TOOLS extends ToolSet>(): () => TransformStream
+```
+
+**Returns:** Transform stream factory function
+
+**Example:**
+```tsx
+import { markdownJoinerTransform } from '@openlane/ui/lib/markdown-joiner-transform'
+
+const stream = aiResponse
+  .pipeThrough(markdownJoinerTransform()())
+  .pipeThrough(textDecoder())
+```
+
+### MarkdownJoiner
+
+Class for buffering and joining markdown syntax elements.
+
+**Location:** `packages/ui/lib/markdown-joiner-transform.ts:72`
+
+```typescript
+class MarkdownJoiner {
+  delayInMs: number
+  processText(text: string): string
+  flush(): string
+}
+```
+
+**Methods:**
+- `processText(text)` - Process text chunk and return complete markdown elements
+- `flush()` - Flush remaining buffer contents
+
+**Example:**
+```tsx
+import { MarkdownJoiner } from '@openlane/ui/lib/markdown-joiner-transform'
+
+const joiner = new MarkdownJoiner()
+const output = joiner.processText('**bold')
+const moreOutput = joiner.processText(' text**')
+// Returns: '**bold text**'
+```

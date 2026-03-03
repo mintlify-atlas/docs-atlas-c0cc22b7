@@ -1,0 +1,355 @@
+---
+title: Custom Hooks
+description: React hooks for component lifecycle, device detection, debouncing, and file uploads
+---
+
+## Overview
+
+Openlane UI provides a collection of custom React hooks for common patterns including lifecycle management, device detection, input debouncing, window events, and file uploads.
+
+## Lifecycle Hooks
+
+### useMounted
+
+Detects when a component has mounted on the client side.
+
+**Location:** `packages/ui/hooks/use-mounted.ts:3`
+
+```typescript
+function useMounted(): boolean
+```
+
+**Returns:** `true` once the component has mounted
+
+**Use Case:** Prevent hydration mismatches in SSR applications
+
+**Example:**
+```tsx
+import { useMounted } from '@openlane/ui/hooks/use-mounted'
+
+export function ClientOnlyComponent() {
+  const mounted = useMounted()
+
+  if (!mounted) {
+    return <div>Loading...</div>
+  }
+
+  return (
+    <div>
+      {/* Client-only content that may differ from SSR */}
+      {typeof window !== 'undefined' && window.location.href}
+    </div>
+  )
+}
+```
+
+## Device Detection
+
+### useIsTouchDevice
+
+Detects if the user is on a touch-capable device.
+
+**Location:** `packages/ui/hooks/use-is-touch-device.ts:5`
+
+```typescript
+function useIsTouchDevice(): boolean
+```
+
+**Returns:** `true` if the device supports touch input
+
+**Features:**
+- Checks multiple touch detection methods
+- Updates on window resize
+- Client-side only hook
+
+**Example:**
+```tsx
+'use client'
+
+import { useIsTouchDevice } from '@openlane/ui/hooks/use-is-touch-device'
+
+export function ResponsiveMenu() {
+  const isTouch = useIsTouchDevice()
+
+  return (
+    <nav>
+      {isTouch ? (
+        <MobileMenu />
+      ) : (
+        <DesktopMenu showTooltips />
+      )}
+    </nav>
+  )
+}
+```
+
+## Input Hooks
+
+### useDebounce
+
+Debounces a value to reduce update frequency.
+
+**Location:** `packages/ui/hooks/use-debounce.ts:3`
+
+```typescript
+function useDebounce<T>(value: T, delay?: number): T
+```
+
+**Parameters:**
+- `value` - The value to debounce
+- `delay` - Delay in milliseconds (default: 500)
+
+**Returns:** Debounced value that updates after the delay
+
+**Use Cases:**
+- Search input handling
+- API call rate limiting
+- Form validation
+
+**Example:**
+```tsx
+import { useDebounce } from '@openlane/ui/hooks/use-debounce'
+import { useState, useEffect } from 'react'
+
+export function SearchInput() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearch = useDebounce(searchTerm, 300)
+
+  useEffect(() => {
+    if (debouncedSearch) {
+      // API call only happens after user stops typing for 300ms
+      fetchSearchResults(debouncedSearch)
+    }
+  }, [debouncedSearch])
+
+  return (
+    <input
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      placeholder="Search..."
+    />
+  )
+}
+```
+
+## Window Event Hooks
+
+### useOnWindowResize
+
+Executes a callback when the window is resized.
+
+**Location:** `packages/ui/lib/windowResize.tsx:3`
+
+```typescript
+function useOnWindowResize(handler: () => void): void
+```
+
+**Parameters:**
+- `handler` - Callback function to execute on resize
+
+**Features:**
+- Automatically cleans up event listeners
+- Executes handler immediately on mount
+- Optimized with proper dependency tracking
+
+**Example:**
+```tsx
+import { useOnWindowResize } from '@openlane/ui/lib/windowResize'
+import { useState } from 'react'
+
+export function ResponsiveChart() {
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+
+  useOnWindowResize(() => {
+    setDimensions({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    })
+  })
+
+  return (
+    <div>
+      <Chart width={dimensions.width * 0.8} height={dimensions.height * 0.6} />
+    </div>
+  )
+}
+```
+
+## File Upload Hooks
+
+### useUploadFile
+
+Manages file upload state and operations with progress tracking.
+
+**Location:** `packages/ui/hooks/use-upload-file.ts:17`
+
+```typescript
+function useUploadFile(props?: UseUploadFileProps): {
+  isUploading: boolean
+  progress: number
+  uploadedFile: UploadedFile | undefined
+  uploadFile: (file: File) => Promise<UploadedFile | undefined>
+  uploadingFile: File | undefined
+}
+```
+
+**Parameters:**
+```typescript
+interface UseUploadFileProps {
+  headers?: Record<string, string>
+  onUploadBegin?: (fileName: string) => void
+  onUploadProgress?: (progress: number) => void
+  onUploadComplete?: (file: UploadedFile) => void
+  onUploadError?: (error: unknown) => void
+  skipPolling?: boolean
+}
+```
+
+**Return Values:**
+- `isUploading` - Whether a file is currently uploading
+- `progress` - Upload progress (0-100)
+- `uploadedFile` - The uploaded file data after completion
+- `uploadFile` - Function to trigger file upload
+- `uploadingFile` - The file currently being uploaded
+
+**Features:**
+- Progress tracking
+- Error handling with toast notifications
+- Mock upload fallback for unauthenticated users
+- Automatic cleanup on unmount
+
+**Example:**
+```tsx
+import { useUploadFile } from '@openlane/ui/hooks/use-upload-file'
+
+export function FileUploader() {
+  const { uploadFile, isUploading, progress, uploadedFile } = useUploadFile({
+    onUploadComplete: (file) => {
+      console.log('Uploaded:', file.url)
+    },
+    onUploadError: (error) => {
+      console.error('Upload failed:', error)
+    },
+  })
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      await uploadFile(file)
+    }
+  }
+
+  return (
+    <div>
+      <input
+        type="file"
+        onChange={handleFileChange}
+        disabled={isUploading}
+      />
+      {isUploading && (
+        <div>
+          <progress value={progress} max={100} />
+          <span>{progress}%</span>
+        </div>
+      )}
+      {uploadedFile && (
+        <div>
+          <a href={uploadedFile.url} target="_blank">
+            {uploadedFile.name}
+          </a>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+### useUploadThing
+
+Low-level hook for UploadThing integration.
+
+**Location:** `packages/ui/hooks/use-upload-file.ts:93`
+
+```typescript
+const { uploadFiles, useUploadThing } = generateReactHelpers<OurFileRouter>()
+```
+
+**Use Case:** Direct access to UploadThing SDK for advanced use cases
+
+**Example:**
+```tsx
+import { useUploadThing } from '@openlane/ui/hooks/use-upload-file'
+
+export function AdvancedUploader() {
+  const { startUpload, isUploading } = useUploadThing('editorUploader', {
+    onClientUploadComplete: (files) => {
+      console.log('Upload complete:', files)
+    },
+  })
+
+  return (
+    <button onClick={() => startUpload(files)}>
+      Upload {isUploading ? '...' : ''}
+    </button>
+  )
+}
+```
+
+## Hook Combination Examples
+
+### Responsive Touch-Aware Component
+
+```tsx
+import { useIsTouchDevice } from '@openlane/ui/hooks/use-is-touch-device'
+import { useOnWindowResize } from '@openlane/ui/lib/windowResize'
+import { useState } from 'react'
+
+export function AdaptiveInterface() {
+  const isTouch = useIsTouchDevice()
+  const [width, setWidth] = useState(0)
+
+  useOnWindowResize(() => {
+    setWidth(window.innerWidth)
+  })
+
+  const isMobile = width < 768
+  const showSimplified = isTouch || isMobile
+
+  return (
+    <div>
+      {showSimplified ? <SimpleUI /> : <AdvancedUI />}
+    </div>
+  )
+}
+```
+
+### Debounced Search with Upload
+
+```tsx
+import { useDebounce } from '@openlane/ui/hooks/use-debounce'
+import { useUploadFile } from '@openlane/ui/hooks/use-upload-file'
+import { useState } from 'react'
+
+export function SearchWithImageUpload() {
+  const [query, setQuery] = useState('')
+  const debouncedQuery = useDebounce(query, 500)
+  const { uploadFile, isUploading } = useUploadFile()
+
+  return (
+    <div>
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search..."
+      />
+      <SearchResults query={debouncedQuery} />
+
+      <input
+        type="file"
+        onChange={(e) => e.target.files?.[0] && uploadFile(e.target.files[0])}
+        disabled={isUploading}
+      />
+    </div>
+  )
+}
+```

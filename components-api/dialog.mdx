@@ -1,0 +1,377 @@
+---
+title: Dialog
+description: A modal dialog component that focuses user attention and blocks interaction with the rest of the application.
+---
+
+## Overview
+
+The Dialog component is a modal overlay built on Radix UI that displays content in a layer above the main application. It includes composable parts for header, footer, title, description, and close functionality.
+
+## Import
+
+```tsx
+import { 
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose
+} from '@repo/ui/dialog'
+```
+
+## Usage
+
+### Basic Dialog
+
+```tsx
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@repo/ui/dialog'
+import { Button } from '@repo/ui/button'
+
+export default function Example() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="filled">Open Dialog</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Dialog Title</DialogTitle>
+          <DialogDescription>
+            This is a description of the dialog content.
+          </DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+### Confirmation Dialog
+
+```tsx
+import { 
+  Dialog, 
+  DialogTrigger, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter,
+  DialogClose
+} from '@repo/ui/dialog'
+import { Button } from '@repo/ui/button'
+
+export default function Example() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="destructive">Delete Account</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Are you absolutely sure?</DialogTitle>
+          <DialogDescription>
+            This action cannot be undone. Your organization and associated 
+            records will be deleted.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="secondary">Cancel</Button>
+          </DialogClose>
+          <Button variant="destructive">Delete</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+## Components
+
+### Dialog
+
+The root dialog component that manages open/close state.
+
+<ParamField path="open" type="boolean">
+  Controlled open state of the dialog.
+</ParamField>
+
+<ParamField path="onOpenChange" type="(open: boolean) => void">
+  Callback fired when the open state changes.
+</ParamField>
+
+<ParamField path="defaultOpen" type="boolean">
+  Default open state for uncontrolled usage.
+</ParamField>
+
+<ParamField path="modal" type="boolean" default="true">
+  Whether the dialog should be modal.
+</ParamField>
+
+### DialogTrigger
+
+Button or element that opens the dialog when clicked.
+
+<ParamField path="asChild" type="boolean">
+  When true, renders the trigger as a Slot component for composition.
+</ParamField>
+
+```tsx
+<DialogTrigger asChild>
+  <Button>Open</Button>
+</DialogTrigger>
+```
+
+### DialogContent
+
+The main dialog content container with overlay.
+
+<ParamField path="showCloseButton" type="boolean" default="true">
+  When true, displays the close button in the top-right corner.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the content container.
+</ParamField>
+
+### DialogHeader
+
+Container for the dialog title and description.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the header.
+</ParamField>
+
+### DialogTitle
+
+The title of the dialog.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the title.
+</ParamField>
+
+### DialogDescription
+
+Description text displayed below the title.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the description.
+</ParamField>
+
+### DialogFooter
+
+Container for action buttons at the bottom of the dialog.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the footer.
+</ParamField>
+
+### DialogClose
+
+Button or element that closes the dialog when clicked.
+
+<ParamField path="asChild" type="boolean">
+  When true, renders as a Slot component for composition.
+</ParamField>
+
+```tsx
+<DialogClose asChild>
+  <Button variant="secondary">Cancel</Button>
+</DialogClose>
+```
+
+### DialogOverlay
+
+The overlay backdrop behind the dialog content.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the overlay.
+</ParamField>
+
+### DialogPortal
+
+Portal component that renders dialog content in a portal.
+
+## Examples
+
+### Controlled Dialog
+
+```tsx
+import { useState } from 'react'
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@repo/ui/dialog'
+import { Button } from '@repo/ui/button'
+
+export default function Example() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>Open Dialog</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Controlled Dialog</DialogTitle>
+        </DialogHeader>
+        <Button onClick={() => setOpen(false)}>
+          Close Programmatically
+        </Button>
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+### Form Dialog
+
+```tsx
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@repo/ui/dialog'
+import { Button } from '@repo/ui/button'
+import { Input } from '@repo/ui/input'
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@repo/ui/form'
+import { useForm } from 'react-hook-form'
+
+export default function Example() {
+  const form = useForm()
+
+  const onSubmit = (data) => {
+    console.log(data)
+  }
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Create Item</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create New Item</DialogTitle>
+        </DialogHeader>
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Item name" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <DialogFooter>
+              <Button type="submit">Create</Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+### Without Close Button
+
+```tsx
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@repo/ui/dialog'
+import { Button } from '@repo/ui/button'
+
+export default function Example() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Important Action</Button>
+      </DialogTrigger>
+      <DialogContent showCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle>Confirm Action</DialogTitle>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="secondary">Cancel</Button>
+          </DialogClose>
+          <Button variant="filled">Proceed</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+### Nested Content
+
+```tsx
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@repo/ui/dialog'
+import { Button } from '@repo/ui/button'
+
+export default function Example() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="filled">Confirm Action</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Confirm Your Action</DialogTitle>
+          <DialogDescription>
+            Please confirm that you want to proceed with this action. 
+            This action is irreversible.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="py-4">
+          <p className="text-sm text-muted-foreground">
+            Additional content can go here.
+          </p>
+        </div>
+        
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="secondary">Cancel</Button>
+          </DialogClose>
+          <Button variant="filled">Proceed</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+## Features
+
+- **Modal Overlay**: Blocks interaction with the rest of the application
+- **Focus Management**: Automatically traps and manages focus
+- **Close on Outside Click**: Closes when clicking the overlay
+- **Close on Escape**: Closes when pressing the Escape key
+- **Composable**: Flexible composition of header, body, and footer
+- **Accessible**: Built with proper ARIA attributes
+
+## Accessibility
+
+- Focuses the first focusable element on open
+- Traps focus within the dialog
+- Returns focus to trigger on close
+- Closes on Escape key
+- Screen reader accessible with proper ARIA roles
+- Close button has screen reader text "Close"
+
+## Styling
+
+The dialog content includes:
+- Centered positioning with responsive sizing
+- Smooth fade and scale animation
+- Semi-transparent overlay backdrop
+- Close button positioned in top-right corner with X icon
+
+## Source
+
+View source: `packages/ui/src/dialog/dialog.tsx`

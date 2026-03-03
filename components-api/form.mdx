@@ -1,0 +1,378 @@
+---
+title: Form
+description: Composable form components built on react-hook-form for building accessible forms with validation.
+---
+
+## Overview
+
+The Form component system provides a set of composable components for building forms with validation, error messages, and accessible markup. Built on top of react-hook-form and Radix UI.
+
+## Import
+
+```tsx
+import { 
+  Form, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormControl, 
+  FormDescription, 
+  FormMessage 
+} from '@repo/ui/form'
+```
+
+## Usage
+
+### Basic Form
+
+```tsx
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { 
+  Form, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormControl, 
+  FormMessage 
+} from '@repo/ui/form'
+import { Input } from '@repo/ui/input'
+import { Button } from '@repo/ui/button'
+
+const formSchema = z.object({
+  email: z.string().email(),
+})
+
+export default function Example() {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+    },
+  })
+
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
+    console.log(data)
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input {...field} type="email" placeholder="Email" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit">Submit</Button>
+      </form>
+    </Form>
+  )
+}
+```
+
+### With Description
+
+```tsx
+import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@repo/ui/form'
+import { Input } from '@repo/ui/input'
+
+export default function Example({ form }) {
+  return (
+    <FormField
+      control={form.control}
+      name="username"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Username</FormLabel>
+          <FormControl>
+            <Input {...field} placeholder="johndoe" />
+          </FormControl>
+          <FormDescription>
+            This is your public display name.
+          </FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+}
+```
+
+## Components
+
+### Form
+
+The root form component that provides form context.
+
+```tsx
+<Form {...form}>
+  {/* form fields */}
+</Form>
+```
+
+This is an alias for `FormProvider` from react-hook-form.
+
+### FormField
+
+Wraps form fields and provides field-level context.
+
+<ParamField path="control" type="Control" required>
+  The form control object from useForm.
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  The name of the field in the form data.
+</ParamField>
+
+<ParamField path="render" type="(props) => ReactNode" required>
+  Render function that receives field props and returns the field UI.
+</ParamField>
+
+### FormItem
+
+Container for a form field, label, description, and error message.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the form item container.
+</ParamField>
+
+### FormLabel
+
+Label element for the form field with error state styling.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the label.
+</ParamField>
+
+Automatically applies error styling when the field has validation errors.
+
+### FormControl
+
+Wrapper for the input element that provides accessibility attributes.
+
+```tsx
+<FormControl>
+  <Input {...field} />
+</FormControl>
+```
+
+Automatically sets:
+- `id` for label association
+- `aria-describedby` for descriptions and errors
+- `aria-invalid` when there are errors
+
+### FormDescription
+
+Helper text displayed below the input field.
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the description.
+</ParamField>
+
+```tsx
+<FormDescription>
+  Enter your email address to receive notifications.
+</FormDescription>
+```
+
+### FormMessage
+
+Displays validation error messages.
+
+<ParamField path="reserveSpace" type="boolean" default="true">
+  When true, reserves space for error messages even when empty to prevent layout shift.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the message container.
+</ParamField>
+
+Features:
+- Displays error icon when there's an error
+- Supports multiple error messages
+- Deduplicates identical error messages
+- Can reserve space to prevent layout shift
+
+## Hook
+
+### useFormField
+
+Access form field context within a form component.
+
+```tsx
+import { useFormField } from '@repo/ui/form'
+
+function CustomFormComponent() {
+  const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
+  
+  return (
+    // Use form field data
+  )
+}
+```
+
+Returns:
+- `id` - Unique field ID
+- `name` - Field name
+- `formItemId` - ID for the form item
+- `formDescriptionId` - ID for the description
+- `formMessageId` - ID for error messages
+- `error` - Current field error
+- `invalid` - Whether the field is invalid
+- `isDirty` - Whether the field has been modified
+- `isTouched` - Whether the field has been focused
+
+## Examples
+
+### Complete Form with Validation
+
+```tsx
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@repo/ui/form'
+import { Input } from '@repo/ui/input'
+import { Button } from '@repo/ui/button'
+
+const formSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+})
+
+export default function LoginForm() {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    // Handle form submission
+    console.log(data)
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input {...field} type="email" placeholder="you@example.com" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input {...field} type="password" placeholder="••••••••" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <Button type="submit" full>
+          Sign In
+        </Button>
+      </form>
+    </Form>
+  )
+}
+```
+
+### Newsletter Subscription Form
+
+```tsx
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Form, FormField, FormControl, FormMessage } from '@repo/ui/form'
+import { Input } from '@repo/ui/input'
+import { Button } from '@repo/ui/button'
+
+const formSchema = z.object({
+  email: z.string().email(),
+})
+
+export default function Subscribe() {
+  const [isPending, setIsPending] = useState(false)
+  
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+    },
+  })
+
+  const onSubmit = async ({ email }: z.infer<typeof formSchema>) => {
+    setIsPending(true)
+    // Handle subscription
+    setIsPending(false)
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <>
+              <FormControl>
+                <Input {...field} type="email" placeholder="Email" />
+              </FormControl>
+              <FormMessage />
+            </>
+          )}
+        />
+        <Button type="submit" loading={isPending}>
+          Subscribe
+        </Button>
+      </form>
+    </Form>
+  )
+}
+```
+
+## Features
+
+- **Type-safe**: Full TypeScript support with type inference
+- **Validation**: Built-in integration with Zod schemas
+- **Accessible**: Proper ARIA attributes and label associations
+- **Error Handling**: Automatic error display with icons
+- **Layout Control**: Optional space reservation to prevent layout shift
+
+## Accessibility
+
+- Proper label-input association via `htmlFor` and `id`
+- Error messages linked via `aria-describedby`
+- Invalid state indicated via `aria-invalid`
+- Screen reader friendly error announcements
+- Info icon to visually indicate errors
+
+## Source
+
+View source: `packages/ui/src/form/form.tsx`

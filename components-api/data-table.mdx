@@ -1,0 +1,270 @@
+---
+title: DataTable
+description: A powerful data table component built with TanStack Table, featuring sorting, filtering, pagination, and column resizing.
+---
+
+## Overview
+
+The DataTable component is a feature-rich table for displaying and managing tabular data. It supports sorting, filtering, column visibility, pagination, and column resizing.
+
+## Import
+
+```tsx
+import { DataTable } from '@repo/ui'
+```
+
+## Usage
+
+```tsx
+import { DataTable } from '@repo/ui'
+import { ColumnDef } from '@tanstack/react-table'
+
+interface User {
+  id: string
+  name: string
+  email: string
+  status: string
+}
+
+const columns: ColumnDef<User>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+  },
+  {
+    accessorKey: 'email',
+    header: 'Email',
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+  },
+]
+
+const data: User[] = [
+  { id: '1', name: 'John Doe', email: 'john@example.com', status: 'Active' },
+  { id: '2', name: 'Jane Smith', email: 'jane@example.com', status: 'Inactive' },
+]
+
+function MyTable() {
+  return (
+    <DataTable
+      columns={columns}
+      data={data}
+      tableKey="users-table"
+    />
+  )
+}
+```
+
+## Props
+
+<ParamField path="columns" type="CustomColumnDef<TData, TValue>[]" required>
+  Array of column definitions. Extends TanStack Table's `ColumnDef` with optional `meta.className` for styling.
+</ParamField>
+
+<ParamField path="data" type="TData[]" required>
+  The data to display in the table.
+</ParamField>
+
+<ParamField path="tableKey" type="TableKeyValue | undefined" required>
+  Unique key for the table, used for persisting sorting and pagination state in localStorage.
+</ParamField>
+
+<ParamField path="loading" type="boolean" default="false">
+  Shows loading skeleton when true.
+</ParamField>
+
+<ParamField path="showFilter" type="boolean" default="false">
+  Shows a filter input for the 'name' column.
+</ParamField>
+
+<ParamField path="showVisibility" type="boolean" default="false">
+  Shows a column visibility toggle dropdown.
+</ParamField>
+
+<ParamField path="noResultsText" type="string" default="'No results'">
+  Text to display when there are no results.
+</ParamField>
+
+<ParamField path="noDataMarkup" type="ReactElement">
+  Custom markup to display when there's no data.
+</ParamField>
+
+<ParamField path="onRowClick" type="(rowData: TData) => void">
+  Callback fired when a row is clicked.
+</ParamField>
+
+<ParamField path="sortFields" type="{ key: string; label: string }[]">
+  Array of sortable field definitions.
+</ParamField>
+
+<ParamField path="onSortChange" type="(sortCondition: SortCondition[]) => void">
+  Callback fired when sort conditions change.
+</ParamField>
+
+<ParamField path="pagination" type="TPagination | null">
+  Pagination configuration object. Set to `null` to disable pagination.
+</ParamField>
+
+<ParamField path="onPaginationChange" type="(arg: TPagination) => void">
+  Callback fired when pagination changes.
+</ParamField>
+
+<ParamField path="paginationMeta" type="TPaginationMeta">
+  Pagination metadata including totalCount, pageInfo, and isLoading.
+</ParamField>
+
+<ParamField path="wrapperClass" type="string">
+  Additional CSS classes for the wrapper div.
+</ParamField>
+
+<ParamField path="columnVisibility" type="VisibilityState">
+  Column visibility state object.
+</ParamField>
+
+<ParamField path="setColumnVisibility" type="React.Dispatch<React.SetStateAction<VisibilityState>>">
+  State setter for column visibility.
+</ParamField>
+
+<ParamField path="footer" type="ReactElement | null">
+  Custom footer element.
+</ParamField>
+
+<ParamField path="defaultSorting" type="{ field: string; direction?: OrderDirection }[]">
+  Default sorting configuration.
+</ParamField>
+
+<ParamField path="stickyHeader" type="boolean" default="false">
+  Makes the table header sticky. Cannot be used with `stickyDialogHeader`.
+</ParamField>
+
+<ParamField path="stickyDialogHeader" type="boolean" default="false">
+  Makes the table header sticky within a dialog. Cannot be used with `stickyHeader`.
+</ParamField>
+
+## Features
+
+### Column Resizing
+
+Columns are resizable by default. Double-click the resize handle to reset a column to its default size.
+
+### Sorting
+
+Provide `sortFields` to enable sorting. The component persists sort state in localStorage using the `tableKey`.
+
+```tsx
+<DataTable
+  columns={columns}
+  data={data}
+  tableKey="users-table"
+  sortFields={[
+    { key: 'name', label: 'Name' },
+    { key: 'email', label: 'Email' },
+  ]}
+  onSortChange={(conditions) => {
+    console.log('Sort changed:', conditions)
+  }}
+/>
+```
+
+### Pagination
+
+The component supports cursor-based pagination. Pagination state is persisted in localStorage.
+
+```tsx
+const [pagination, setPagination] = useState<TPagination>({
+  page: 1,
+  pageSize: 10,
+  query: { first: 10 },
+})
+
+<DataTable
+  columns={columns}
+  data={data}
+  tableKey="users-table"
+  pagination={pagination}
+  onPaginationChange={setPagination}
+  paginationMeta={{
+    totalCount: 100,
+    pageInfo: {
+      hasNextPage: true,
+      hasPreviousPage: false,
+      startCursor: 'cursor1',
+      endCursor: 'cursor2',
+    },
+  }}
+/>
+```
+
+### Column Visibility
+
+Control which columns are visible:
+
+```tsx
+const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+
+<DataTable
+  columns={columns}
+  data={data}
+  tableKey="users-table"
+  showVisibility
+  columnVisibility={columnVisibility}
+  setColumnVisibility={setColumnVisibility}
+/>
+```
+
+## Utility Functions
+
+### getInitialPagination
+
+Retrieves initial pagination state from localStorage or returns a fallback.
+
+```tsx
+import { getInitialPagination } from '@repo/ui'
+
+const initialPagination = getInitialPagination('my-table-key', {
+  page: 1,
+  pageSize: 10,
+  query: { first: 10 },
+})
+```
+
+### getInitialSortConditions
+
+Retrieves initial sort conditions from localStorage with validation.
+
+```tsx
+import { getInitialSortConditions } from '@repo/ui'
+
+const initialSort = getInitialSortConditions(
+  'my-table-key',
+  ['name', 'email', 'status'],
+  [{ field: 'name', direction: OrderDirection.ASC }]
+)
+```
+
+## Types
+
+### SortCondition
+
+```tsx
+type SortCondition<TField extends string> = {
+  field: TField
+  direction: OrderDirection
+}
+```
+
+### CustomColumnDef
+
+```tsx
+type CustomColumnDef<TData, TValue> = ColumnDef<TData, TValue> & {
+  meta?: {
+    className?: string
+  }
+}
+```
+
+## Source
+
+Location: `/home/daytona/workspace/source/packages/ui/src/data-table/data-table.tsx`

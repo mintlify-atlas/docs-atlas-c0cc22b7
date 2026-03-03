@@ -1,0 +1,218 @@
+---
+title: Avatar
+description: An image element with a fallback for representing users or entities.
+---
+
+## Overview
+
+The Avatar component displays a user profile image with automatic fallback to initials or placeholder content. It's built on Radix UI's Avatar primitive.
+
+## Import
+
+```tsx
+import { Avatar, AvatarImage, AvatarFallback } from '@repo/ui'
+```
+
+## Usage
+
+```tsx
+import { Avatar, AvatarImage, AvatarFallback } from '@repo/ui'
+
+function UserProfile() {
+  return (
+    <Avatar>
+      <AvatarImage src="https://github.com/shadcn.png" alt="User" />
+      <AvatarFallback>JD</AvatarFallback>
+    </Avatar>
+  )
+}
+```
+
+## Components
+
+### Avatar
+
+The root container component.
+
+<ParamField path="variant" type="'small' | 'medium' | 'large' | 'extra-large'" default="'medium'">
+  Size variant of the avatar.
+  - `small`: 20px × 20px
+  - `medium`: 40px × 40px
+  - `large`: 56px × 56px
+  - `extra-large`: 72px × 72px
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply.
+</ParamField>
+
+### AvatarImage
+
+The image element, automatically handles loading states.
+
+<ParamField path="src" type="string" required>
+  Image source URL.
+</ParamField>
+
+<ParamField path="alt" type="string">
+  Alternative text for the image.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply.
+</ParamField>
+
+### AvatarFallback
+
+Displayed while the image is loading or if it fails to load.
+
+<ParamField path="children" type="React.ReactNode">
+  Content to display as fallback (typically user initials).
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply.
+</ParamField>
+
+## Examples
+
+### With Image
+
+```tsx
+<Avatar variant="large">
+  <AvatarImage src="/avatars/user.png" alt="User name" />
+  <AvatarFallback>UN</AvatarFallback>
+</Avatar>
+```
+
+### Without Image (Fallback Only)
+
+```tsx
+<Avatar variant="medium">
+  <AvatarFallback>KW</AvatarFallback>
+</Avatar>
+```
+
+### Different Sizes
+
+```tsx
+function AvatarSizes() {
+  return (
+    <div className="flex items-center gap-4">
+      <Avatar variant="small">
+        <AvatarImage src="/avatar.png" />
+        <AvatarFallback>SM</AvatarFallback>
+      </Avatar>
+      
+      <Avatar variant="medium">
+        <AvatarImage src="/avatar.png" />
+        <AvatarFallback>MD</AvatarFallback>
+      </Avatar>
+      
+      <Avatar variant="large">
+        <AvatarImage src="/avatar.png" />
+        <AvatarFallback>LG</AvatarFallback>
+      </Avatar>
+      
+      <Avatar variant="extra-large">
+        <AvatarImage src="/avatar.png" />
+        <AvatarFallback>XL</AvatarFallback>
+      </Avatar>
+    </div>
+  )
+}
+```
+
+### User Initials Helper
+
+```tsx
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(part => part[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
+function UserAvatar({ name, imageUrl }: { name: string; imageUrl?: string }) {
+  return (
+    <Avatar>
+      {imageUrl && <AvatarImage src={imageUrl} alt={name} />}
+      <AvatarFallback>{getInitials(name)}</AvatarFallback>
+    </Avatar>
+  )
+}
+
+// Usage
+<UserAvatar name="John Doe" imageUrl="/avatars/john.png" />
+```
+
+### In a User Card
+
+```tsx
+function UserCard({ user }: { user: { name: string; email: string; avatar?: string } }) {
+  return (
+    <div className="flex items-center gap-3">
+      <Avatar variant="medium">
+        <AvatarImage src={user.avatar} alt={user.name} />
+        <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+      </Avatar>
+      <div>
+        <p className="font-medium">{user.name}</p>
+        <p className="text-sm text-gray-500">{user.email}</p>
+      </div>
+    </div>
+  )
+}
+```
+
+### Custom Styling
+
+```tsx
+<Avatar className="border-2 border-primary">
+  <AvatarImage src="/avatar.png" />
+  <AvatarFallback className="bg-blue-500 text-white">JD</AvatarFallback>
+</Avatar>
+```
+
+## Styling Details
+
+The Avatar component uses the following base styles:
+
+### Avatar Root
+- `relative flex` - Flex container
+- `h-8 w-8` - Default size (32px, overridden by variants)
+- `shrink-0` - Prevents shrinking in flex layouts
+- `overflow-hidden` - Clips image to container
+- `rounded-full` - Circular shape
+- `bg-avatar-transparent` - Transparent background
+
+### AvatarImage
+- `aspect-square` - 1:1 aspect ratio
+- `h-full w-full` - Fills container
+
+### AvatarFallback
+- `uppercase` - Uppercase text
+- `flex h-full w-full items-center justify-center` - Centers content
+- `bg-avatar` - Avatar background color
+- `text-button-text` - Text color
+- `rounded-full` - Circular shape
+
+## Accessibility
+
+- Always provide an `alt` attribute for `AvatarImage`
+- Fallback text is automatically uppercase for consistency
+- The component uses Radix UI primitives for proper accessibility
+
+```tsx
+<Avatar>
+  <AvatarImage src="/user.png" alt="John Doe's profile picture" />
+  <AvatarFallback>JD</AvatarFallback>
+</Avatar>
+```
+
+## Sources
+
+- Avatar Component: `/home/daytona/workspace/source/packages/ui/src/avatar/avatar.tsx`
+- Avatar Styles: `/home/daytona/workspace/source/packages/ui/src/avatar/avatar.styles.tsx`

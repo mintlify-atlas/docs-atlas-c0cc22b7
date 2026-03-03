@@ -1,0 +1,187 @@
+---
+title: Badge
+description: A badge component for displaying status, labels, and other small bits of information.
+---
+
+## Overview
+
+The Badge component is used to highlight small bits of information such as status indicators, labels, or tags. It's built with class-variance-authority for flexible styling variants.
+
+## Import
+
+```tsx
+import { Badge } from '@repo/ui'
+```
+
+## Usage
+
+```tsx
+import { Badge } from '@repo/ui'
+
+function MyComponent() {
+  return (
+    <div>
+      <Badge>Default</Badge>
+      <Badge variant="secondary">Secondary</Badge>
+      <Badge variant="outline">Outline</Badge>
+    </div>
+  )
+}
+```
+
+## Props
+
+<ParamField path="variant" type="'default' | 'secondary' | 'outline' | 'gold' | 'destructive' | 'select' | 'green' | 'blue' | 'document'" default="'default'">
+  Visual style variant of the badge.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the badge.
+</ParamField>
+
+<ParamField path="children" type="React.ReactNode">
+  Content to display inside the badge.
+</ParamField>
+
+## Variants
+
+### Default
+
+The default variant uses secondary button styling.
+
+```tsx
+<Badge>Default Badge</Badge>
+```
+
+### Secondary
+
+Secondary variant with background and hover effect.
+
+```tsx
+<Badge variant="secondary">Secondary</Badge>
+```
+
+### Outline
+
+Outline variant with border only.
+
+```tsx
+<Badge variant="outline">Outline</Badge>
+```
+
+### Gold
+
+Gold variant for premium or trial features.
+
+```tsx
+<Badge variant="gold">Trial</Badge>
+```
+
+### Destructive
+
+Destructive (error) variant with red background.
+
+```tsx
+<Badge variant="destructive">Error</Badge>
+```
+
+### Select
+
+Select variant with border background.
+
+```tsx
+<Badge variant="select">Selected</Badge>
+```
+
+### Green
+
+Green success variant.
+
+```tsx
+<Badge variant="green">Success</Badge>
+```
+
+### Blue
+
+Blue info variant.
+
+```tsx
+<Badge variant="blue">Info</Badge>
+```
+
+### Document
+
+Document chip variant with rounded corners and specific styling.
+
+```tsx
+<Badge variant="document">Document</Badge>
+```
+
+## Examples
+
+### Status Indicators
+
+```tsx
+function StatusBadge({ status }: { status: 'active' | 'inactive' | 'pending' }) {
+  const variantMap = {
+    active: 'green',
+    inactive: 'destructive',
+    pending: 'blue',
+  } as const
+
+  return (
+    <Badge variant={variantMap[status]}>
+      {status.charAt(0).toUpperCase() + status.slice(1)}
+    </Badge>
+  )
+}
+```
+
+### With Icons
+
+```tsx
+import { Badge } from '@repo/ui'
+import { CheckIcon } from 'lucide-react'
+
+function VerifiedBadge() {
+  return (
+    <Badge variant="green" className="gap-1">
+      <CheckIcon className="h-3 w-3" />
+      Verified
+    </Badge>
+  )
+}
+```
+
+### Custom Styling
+
+```tsx
+<Badge className="text-lg px-4 py-1" variant="outline">
+  Custom Size
+</Badge>
+```
+
+## Accessibility
+
+The Badge component renders as a `<div>` element. For semantic meaning, consider using appropriate ARIA attributes:
+
+```tsx
+<Badge variant="green" role="status" aria-label="Active status">
+  Active
+</Badge>
+```
+
+## Styling Details
+
+The Badge component uses the following base styles:
+- `inline-flex items-center` - Flexbox layout
+- `rounded-full` - Fully rounded corners (except 'document' variant)
+- `border` - Border styling
+- `px-2.5 py-0.5` - Padding
+- `text-xs` - Small text size
+- `h-fit` - Height fits content
+- `transition-colors` - Smooth color transitions
+
+## Source
+
+Location: `/home/daytona/workspace/source/packages/ui/src/badge/badge.tsx`

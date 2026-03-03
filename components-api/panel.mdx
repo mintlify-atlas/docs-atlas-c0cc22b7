@@ -1,0 +1,140 @@
+---
+title: Panel
+description: A flexible container component with layout variants and optional destructive styling
+---
+
+## Overview
+
+The Panel component provides a bordered container with configurable layout properties. It includes a PanelHeader subcomponent for structured headings and supports a destructive variant with warning icon.
+
+## Components
+
+### Panel
+
+Main container component with flexible layout options.
+
+<ParamField path="gap" type="0 | 1 | 2 | 4 | 6 | 8" default="6">
+  Gap spacing between child elements
+</ParamField>
+
+<ParamField path="align" type="'start' | 'center' | 'end' | 'stretch'" default="'stretch'">
+  Vertical alignment of children
+</ParamField>
+
+<ParamField path="justify" type="'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'" default="'start'">
+  Horizontal justification of children
+</ParamField>
+
+<ParamField path="textAlign" type="'left' | 'center' | 'right'" default="'left'">
+  Text alignment within the panel
+</ParamField>
+
+<ParamField path="destructive" type="boolean">
+  When true, applies destructive styling with red background and warning icon
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the panel
+</ParamField>
+
+<ParamField path="children" type="React.ReactNode" required>
+  Content to render inside the panel
+</ParamField>
+
+### PanelHeader
+
+Header component with heading and optional subheading.
+
+<ParamField path="heading" type="React.ReactNode" required>
+  Main heading content
+</ParamField>
+
+<ParamField path="subheading" type="React.ReactNode">
+  Optional subheading content
+</ParamField>
+
+<ParamField path="noBorder" type="boolean" default="false">
+  When true, removes bottom border and padding
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the header
+</ParamField>
+
+## Usage
+
+```tsx
+import { Panel, PanelHeader } from '@repo/ui'
+
+export function Example() {
+  return (
+    <Panel>
+      <PanelHeader 
+        heading="Settings" 
+        subheading="Manage your preferences" 
+      />
+      <p>Panel content goes here</p>
+    </Panel>
+  )
+}
+```
+
+## Examples
+
+### Basic Panel
+
+```tsx
+<Panel>
+  <p>Simple panel content</p>
+</Panel>
+```
+
+### Panel with Header
+
+```tsx
+<Panel gap={8}>
+  <PanelHeader 
+    heading="User Information" 
+    subheading="Update your profile details" 
+  />
+  <form>
+    {/* Form fields */}
+  </form>
+</Panel>
+```
+
+### Destructive Panel
+
+```tsx
+<Panel destructive>
+  <PanelHeader 
+    heading="Warning" 
+    subheading="This action cannot be undone" 
+    noBorder
+  />
+  <p>Are you sure you want to delete this item?</p>
+</Panel>
+```
+
+### Centered Panel
+
+```tsx
+<Panel align="center" justify="center" textAlign="center" gap={4}>
+  <h3>Welcome</h3>
+  <p>Get started with your account</p>
+  <button>Continue</button>
+</Panel>
+```
+
+### Custom Layout
+
+```tsx
+<Panel gap={2} justify="between" align="start">
+  <div>Left content</div>
+  <div>Right content</div>
+</Panel>
+```
+
+## Implementation
+
+Source: `/home/daytona/workspace/source/packages/ui/src/panel/panel.tsx`

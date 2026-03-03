@@ -1,0 +1,308 @@
+---
+title: Charts
+description: Chart components for data visualization including LineChart and DonutChart.
+---
+
+## Overview
+
+Openlane UI provides chart components built with Recharts for visualizing data. The LineChart is based on Tremor's implementation with customizations for interactive data exploration.
+
+## LineChart
+
+### Import
+
+```tsx
+import { LineChart } from '@repo/ui'
+```
+
+### Usage
+
+```tsx
+import { LineChart } from '@repo/ui'
+
+const data = [
+  { date: 'Jan 1', sales: 120, revenue: 450 },
+  { date: 'Jan 2', sales: 150, revenue: 520 },
+  { date: 'Jan 3', sales: 180, revenue: 600 },
+]
+
+const valueFormatter = (value: number) => `$${value}`
+
+function MyChart() {
+  return (
+    <LineChart
+      data={data}
+      index="date"
+      categories={['sales', 'revenue']}
+      colors={['blue', 'emerald']}
+      valueFormatter={valueFormatter}
+      yAxisWidth={60}
+    />
+  )
+}
+```
+
+### Props
+
+<ParamField path="data" type="Record<string, any>[]" required>
+  Array of data objects to visualize.
+</ParamField>
+
+<ParamField path="index" type="string" required>
+  The key in the data object to use for the x-axis.
+</ParamField>
+
+<ParamField path="categories" type="string[]" required>
+  Array of data keys to plot as lines.
+</ParamField>
+
+<ParamField path="colors" type="AvailableChartColorsKeys[]" default="AvailableChartColors">
+  Array of color keys for each category. Available colors include: 'blue', 'emerald', 'jade', 'saffron', 'red', etc.
+</ParamField>
+
+<ParamField path="valueFormatter" type="(value: number) => string" default="(value) => value.toString()">
+  Function to format values displayed in tooltips and y-axis.
+</ParamField>
+
+<ParamField path="startEndOnly" type="boolean" default="false">
+  If true, only shows start and end ticks on x-axis.
+</ParamField>
+
+<ParamField path="showXAxis" type="boolean" default="true">
+  Whether to display the x-axis.
+</ParamField>
+
+<ParamField path="showYAxis" type="boolean" default="true">
+  Whether to display the y-axis.
+</ParamField>
+
+<ParamField path="showGridLines" type="boolean" default="true">
+  Whether to display grid lines.
+</ParamField>
+
+<ParamField path="yAxisWidth" type="number" default="56">
+  Width of the y-axis in pixels.
+</ParamField>
+
+<ParamField path="intervalType" type="'preserveStartEnd' | 'equidistantPreserveStart'" default="'equidistantPreserveStart'">
+  How to space x-axis ticks.
+</ParamField>
+
+<ParamField path="showTooltip" type="boolean" default="true">
+  Whether to display tooltips on hover.
+</ParamField>
+
+<ParamField path="showLegend" type="boolean" default="true">
+  Whether to display the legend.
+</ParamField>
+
+<ParamField path="autoMinValue" type="boolean" default="false">
+  Automatically calculate minimum y-axis value.
+</ParamField>
+
+<ParamField path="minValue" type="number">
+  Minimum value for y-axis.
+</ParamField>
+
+<ParamField path="maxValue" type="number">
+  Maximum value for y-axis.
+</ParamField>
+
+<ParamField path="allowDecimals" type="boolean" default="true">
+  Whether to allow decimal values on y-axis.
+</ParamField>
+
+<ParamField path="onValueChange" type="(value: LineChartEventProps) => void">
+  Callback fired when a data point or category is clicked.
+</ParamField>
+
+<ParamField path="enableLegendSlider" type="boolean" default="false">
+  Enables horizontal scrolling for the legend if items don't fit.
+</ParamField>
+
+<ParamField path="tickGap" type="number" default="5">
+  Minimum gap between x-axis ticks.
+</ParamField>
+
+<ParamField path="connectNulls" type="boolean" default="false">
+  Whether to connect line segments across null values.
+</ParamField>
+
+<ParamField path="xAxisLabel" type="string">
+  Label for the x-axis.
+</ParamField>
+
+<ParamField path="yAxisLabel" type="string">
+  Label for the y-axis.
+</ParamField>
+
+<ParamField path="legendPosition" type="'left' | 'center' | 'right'" default="'right'">
+  Position of the legend.
+</ParamField>
+
+<ParamField path="tooltipCallback" type="(tooltipCallbackContent: TooltipProps) => void">
+  Callback fired when tooltip content changes.
+</ParamField>
+
+<ParamField path="customTooltip" type="React.ComponentType<TooltipProps>">
+  Custom tooltip component.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes.
+</ParamField>
+
+### Custom Tooltip Example
+
+```tsx
+import { LineChart, TooltipProps } from '@repo/ui'
+
+const CustomTooltip = ({ payload, active, label }: TooltipProps) => {
+  if (!active || !payload || payload.length === 0) return null
+
+  return (
+    <div className="rounded-md border bg-white p-4 shadow-md">
+      <p className="font-medium">{label}</p>
+      {payload.map((item, index) => (
+        <div key={index} className="flex items-center gap-2">
+          <span className="text-sm">{item.category}:</span>
+          <span className="font-medium">{item.value}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function MyChart() {
+  return (
+    <LineChart
+      data={data}
+      index="date"
+      categories={['sales', 'revenue']}
+      customTooltip={CustomTooltip}
+    />
+  )
+}
+```
+
+### Interactive Events
+
+```tsx
+import { LineChart, LineChartEventProps } from '@repo/ui'
+
+function MyChart() {
+  const handleValueChange = (event: LineChartEventProps) => {
+    if (event) {
+      console.log('Event type:', event.eventType) // 'dot' or 'category'
+      console.log('Category clicked:', event.categoryClicked)
+    }
+  }
+
+  return (
+    <LineChart
+      data={data}
+      index="date"
+      categories={['sales', 'revenue']}
+      onValueChange={handleValueChange}
+    />
+  )
+}
+```
+
+## DonutChart
+
+### Import
+
+```tsx
+import { DonutChart } from '@repo/ui'
+```
+
+### Usage
+
+```tsx
+import { DonutChart } from '@repo/ui'
+
+const data = [
+  { name: 'Category A', value: 400 },
+  { name: 'Category B', value: 300 },
+  { name: 'Category C', value: 200 },
+  { name: 'Category D', value: 100 },
+]
+
+function MyDonutChart() {
+  return (
+    <DonutChart
+      data={data}
+      colors={['#0088FE', '#00C49F', '#FFBB28', '#FF8042']}
+      innerRadius={60}
+      outerRadius={80}
+      width={300}
+      height={300}
+    />
+  )
+}
+```
+
+### Props
+
+<ParamField path="data" type="{ name: string; value: number }[]" required>
+  Array of data objects with name and value properties.
+</ParamField>
+
+<ParamField path="colors" type="string[]" default="['#0088FE', '#00C49F', '#FFBB28', '#FF8042']">
+  Array of color hex codes for each segment.
+</ParamField>
+
+<ParamField path="innerRadius" type="number" default="60">
+  Inner radius of the donut in pixels.
+</ParamField>
+
+<ParamField path="outerRadius" type="number" default="80">
+  Outer radius of the donut in pixels.
+</ParamField>
+
+<ParamField path="width" type="number" default="300">
+  Width of the chart container in pixels.
+</ParamField>
+
+<ParamField path="height" type="number" default="300">
+  Height of the chart container in pixels.
+</ParamField>
+
+## Types
+
+### LineChartEventProps
+
+```tsx
+type BaseEventProps = {
+  eventType: 'dot' | 'category'
+  categoryClicked: string
+  [key: string]: number | string
+}
+
+type LineChartEventProps = BaseEventProps | null | undefined
+```
+
+### TooltipProps
+
+```tsx
+interface TooltipProps {
+  active: boolean | undefined
+  payload: PayloadItem[]
+  label: string
+}
+
+type PayloadItem = {
+  category: string
+  value: number
+  index: string
+  color: AvailableChartColorsKeys
+  type?: string
+  payload: any
+}
+```
+
+## Sources
+
+- LineChart: `/home/daytona/workspace/source/packages/ui/src/chart/chart.tsx`
+- DonutChart: `/home/daytona/workspace/source/packages/ui/src/chart/donut-chart.tsx`

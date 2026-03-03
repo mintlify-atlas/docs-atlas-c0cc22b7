@@ -1,0 +1,440 @@
+---
+title: Table
+description: A flexible table component with support for striping, compact mode, sticky headers, and multiple variants.
+---
+
+## Overview
+
+The Table component provides a complete set of composable elements for building data tables. It supports various visual styles, sticky headers, striping, and compact layouts.
+
+## Import
+
+```tsx
+import { 
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption
+} from '@repo/ui/table'
+```
+
+## Usage
+
+### Basic Table
+
+```tsx
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@repo/ui/table'
+
+const users = [
+  { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin' },
+  { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Editor' },
+  { id: 3, name: 'Alice Johnson', email: 'alice@example.com', role: 'Viewer' },
+]
+
+export default function Example() {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Role</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {users.map((user) => (
+          <TableRow key={user.id}>
+            <TableCell>{user.name}</TableCell>
+            <TableCell>{user.email}</TableCell>
+            <TableCell>{user.role}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
+}
+```
+
+### Striped Table
+
+```tsx
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@repo/ui/table'
+
+export default function Example() {
+  return (
+    <Table striped>
+      <TableHeader>
+        <TableRow>
+          <TableHead>ID</TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Status</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {/* table rows */}
+      </TableBody>
+    </Table>
+  )
+}
+```
+
+### Compact Table
+
+```tsx
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@repo/ui/table'
+
+export default function Example() {
+  return (
+    <Table compact>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Product</TableHead>
+          <TableHead>Price</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {/* table rows */}
+      </TableBody>
+    </Table>
+  )
+}
+```
+
+## Props
+
+### Table
+
+<ParamField path="striped" type="boolean" default="false">
+  When true, applies alternating row background colors.
+</ParamField>
+
+<ParamField path="compact" type="boolean" default="false">
+  When true, reduces padding and font size for a more condensed layout.
+</ParamField>
+
+<ParamField path="variant" type="string">
+  Visual style variant of the table.
+  
+  Options: `default`, `data`
+</ParamField>
+
+<ParamField path="stickyHeader" type="boolean">
+  When true, makes the table header stick to the top on scroll with max height of 70vh.
+</ParamField>
+
+<ParamField path="stickyDialogHeader" type="boolean">
+  When true, makes the header sticky within a dialog with max height of 96 (384px).
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the table.
+</ParamField>
+
+### TableHeader
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the table header.
+</ParamField>
+
+### TableBody
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the table body.
+</ParamField>
+
+### TableFooter
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the table footer.
+</ParamField>
+
+### TableRow
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the table row.
+</ParamField>
+
+Supports data attributes:
+- `data-state="selected"` - Applies selected state styling
+
+### TableHead
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the table head cell.
+</ParamField>
+
+### TableCell
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the table cell.
+</ParamField>
+
+### TableCaption
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the table caption.
+</ParamField>
+
+## Variants
+
+### Default
+
+```tsx
+<Table variant="default">
+  {/* table content */}
+</Table>
+```
+
+Standard table styling with default padding and spacing.
+
+### Data
+
+```tsx
+<Table variant="data">
+  {/* table content */}
+</Table>
+```
+
+Optimized for data-heavy tables with:
+- Fixed table layout
+- Larger font size in headers
+- Adjusted padding
+
+## Examples
+
+### With Sticky Header
+
+```tsx
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@repo/ui/table'
+
+const users = [
+  { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin' },
+  { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Editor' },
+  // ... many more rows
+]
+
+export default function Example() {
+  return (
+    <div className="p-4 bg-background rounded-lg">
+      <Table stickyHeader>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ID</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Last updated</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {users.map((user) => (
+            <TableRow key={user.id}>
+              <TableCell>{user.id}</TableCell>
+              <TableCell>{user.name}</TableCell>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>{user.role}</TableCell>
+              <TableCell>01/01/2024</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}
+```
+
+### With Action Menu
+
+```tsx
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@repo/ui/table'
+import { EllipsisIcon } from 'lucide-react'
+
+const users = [
+  { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin' },
+  { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Editor' },
+  { id: 3, name: 'Alice Johnson', email: 'alice@example.com', role: 'Viewer' },
+  { id: 4, name: 'Bob Brown', email: 'bob@example.com', role: 'Contributor' },
+]
+
+export default function Example() {
+  return (
+    <div className="p-4 bg-background rounded-lg">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ID</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Last updated</TableHead>
+            <TableHead></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {users.map((user) => (
+            <TableRow key={user.id}>
+              <TableCell>{user.id}</TableCell>
+              <TableCell>{user.name}</TableCell>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>{user.role}</TableCell>
+              <TableCell>01/01/2024</TableCell>
+              <TableCell>
+                <div className="text-teal-500 cursor-pointer">
+                  <EllipsisIcon />
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}
+```
+
+### With Footer and Caption
+
+```tsx
+import { Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell, TableCaption } from '@repo/ui/table'
+
+export default function Example() {
+  return (
+    <Table>
+      <TableCaption>A list of your recent invoices.</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Invoice</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Amount</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell>INV001</TableCell>
+          <TableCell>Paid</TableCell>
+          <TableCell>$250.00</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>INV002</TableCell>
+          <TableCell>Pending</TableCell>
+          <TableCell>$150.00</TableCell>
+        </TableRow>
+      </TableBody>
+      <TableFooter>
+        <TableRow>
+          <TableCell colSpan={2}>Total</TableCell>
+          <TableCell>$400.00</TableCell>
+        </TableRow>
+      </TableFooter>
+    </Table>
+  )
+}
+```
+
+### Compact Striped Table
+
+```tsx
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@repo/ui/table'
+
+export default function Example() {
+  return (
+    <Table compact striped>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Product</TableHead>
+          <TableHead>SKU</TableHead>
+          <TableHead>Price</TableHead>
+          <TableHead>Stock</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell>Widget A</TableCell>
+          <TableCell>WID-001</TableCell>
+          <TableCell>$19.99</TableCell>
+          <TableCell>150</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>Widget B</TableCell>
+          <TableCell>WID-002</TableCell>
+          <TableCell>$29.99</TableCell>
+          <TableCell>75</TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  )
+}
+```
+
+### Data Variant Table
+
+```tsx
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@repo/ui/table'
+
+export default function Example() {
+  return (
+    <Table variant="data">
+      <TableHeader>
+        <TableRow>
+          <TableHead>Metric</TableHead>
+          <TableHead>Value</TableHead>
+          <TableHead>Change</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell>Revenue</TableCell>
+          <TableCell>$1,234,567</TableCell>
+          <TableCell>+12.5%</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>Users</TableCell>
+          <TableCell>45,678</TableCell>
+          <TableCell>+8.3%</TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  )
+}
+```
+
+## Features
+
+- **Responsive**: Automatically scrolls horizontally on small screens
+- **Hover Effects**: Row hover effects with smooth transitions
+- **Striped Rows**: Optional alternating row colors
+- **Compact Mode**: Reduced spacing for dense data
+- **Sticky Headers**: Headers stay visible during scroll
+- **Selection Support**: Built-in styling for selected rows
+- **Checkbox Support**: Optimized spacing for checkbox columns
+
+## Styling
+
+### Row States
+
+Rows support various visual states:
+- Hover: Background color change with transition
+- Selected: Via `data-state="selected"` attribute
+- Striped: Even rows with secondary background color
+
+### Header Behavior
+
+- Sticky positioning when `stickyHeader` is enabled
+- Border bottom for visual separation
+- Background color to remain visible over scrolled content
+
+## Accessibility
+
+- Semantic HTML table elements
+- Proper `<thead>`, `<tbody>`, and `<tfoot>` structure
+- Caption support for table descriptions
+- Checkbox cells have proper spacing and alignment
+- Keyboard navigable
+
+## Source
+
+View source: `packages/ui/src/table/table.tsx`

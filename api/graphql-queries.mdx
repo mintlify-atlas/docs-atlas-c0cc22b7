@@ -1,0 +1,443 @@
+---
+title: GraphQL Queries
+description: Query patterns and examples for fetching data from the Openlane API
+---
+
+Queries are used to fetch data from the Openlane GraphQL API. This guide covers common query patterns and real examples from the codebase.
+
+## Query Structure
+
+Queries are defined using the `gql` template tag and exported as constants:
+
+```typescript
+import { gql } from 'graphql-request'
+
+export const GET_USER_PROFILE = gql`
+  query GetUserProfile($userId: ID!) {
+    user(id: $userId) {
+      id
+      firstName
+      lastName
+      email
+    }
+  }
+`
+```
+
+## Common Query Patterns
+
+### Single Item Query
+
+Fetch a single item by ID:
+
+```typescript packages/codegen/query/user.ts
+export const GET_USER_PROFILE = gql`
+  query GetUserProfile($userId: ID!) {
+    user(id: $userId) {
+      id
+      firstName
+      lastName
+      displayName
+      email
+      avatarRemoteURL
+      avatarFile {
+        presignedURL
+      }
+      setting {
+        id
+        status
+        tags
+        isTfaEnabled
+        isWebauthnAllowed
+        defaultOrg {
+          id
+          displayName
+        }
+      }
+    }
+  }
+`
+```
+
+**Generated Hook:**
+
+```typescript
+const { data: userData } = useGetCurrentUser(userId)
+```
+
+### List Query with Edges
+
+Fetch a list of items using the connection pattern:
+
+```typescript packages/codegen/query/organization.ts
+export const GET_ALL_ORGANIZATIONS = gql`
+  query GetAllOrganizations {
+    organizations {
+      edges {
+        node {
+          id
+          name
+          displayName
+          avatarRemoteURL
+          personalOrg
+          avatarFile {
+            id
+            presignedURL
+          }
+          stripeCustomerID
+          setting {
+            identityProviderLoginEnforced
+          }
+        }
+      }
+    }
+  }
+`
+```
+
+**Generated Hook:**
+
+```typescript
+const { data } = useGetAllOrganizations()
+const organizations = data?.organizations?.edges?.map(edge => edge.node) ?? []
+```
+
+### Paginated Query
+
+Fetch paginated data with cursor-based pagination:
+
+```typescript packages/codegen/query/organization.ts
+export const GET_SINGLE_ORGANIZATION_MEMBERS = gql`
+  query GetSingleOrganizationMembers(
+    $organizationId: ID!
+    $first: Int
+    $after: Cursor
+    $last: Int
+    $before: Cursor
+  ) {
+    organization(id: $organizationId) {
+      members(first: $first, after: $after, last: $last, before: $before) {
+        edges {
+          node {
+            id
+            createdAt
+            role
+            user {
+              id
+              displayName
+              authProvider
+              avatarRemoteURL
+              email
+              role
+              createdAt
+              avatarFile {
+                id
+                presignedURL
+              }
+            }
+          }
+        }
+        pageInfo {
+          endCursor
+          startCursor
+          hasPreviousPage
+          hasNextPage
+        }
+        totalCount
+      }
+    }
+  }
+`
+```
+
+**Usage with Pagination:**
+
+```typescript
+const { data } = useGetSingleOrganizationMembers({
+  organizationId,
+  pagination: {
+    page: 1,
+    pageSize: 20,
+    query: {
+      first: 20,
+      after: null
+    }
+  }
+})
+
+const members = data?.organization?.members
+const hasNextPage = members?.pageInfo?.hasNextPage
+const totalCount = members?.totalCount
+```
+
+### Filtered Query
+
+Fetch items with filtering and ordering:
+
+```typescript packages/codegen/query/organization.ts
+export const GET_INVITES = gql`
+  query GetInvites(
+    $where: InviteWhereInput
+    $orderBy: [InviteOrder!]
+    $first: Int
+    $after: Cursor
+    $last: Int
+    $before: Cursor
+  ) {
+    invites(
+      where: $where
+      orderBy: $orderBy
+      first: $first
+      after: $after
+      last: $last
+      before: $before
+    ) {
+      edges {
+        node {
+          id
+          recipient
+          status
+          createdAt
+          expires
+          role
+          sendAttempts
+        }
+      }
+      pageInfo {
+        startCursor
+        endCursor
+      }
+      totalCount
+    }
+  }
+`
+```
+
+**Usage with Filters:**
+
+```typescript
+const { data } = useGetInvites({
+  where: {
+    status: 'PENDING',
+    organizationId: orgId
+  },
+  orderBy: [{ field: 'CREATED_AT', direction: 'DESC' }],
+  pagination: {
+    page: 1,
+    pageSize: 10,
+    query: { first: 10 }
+  },
+  enabled: true
+})
+```
+
+### Nested Query
+
+Fetch related data in a single query:
+
+```typescript packages/codegen/query/organization.ts
+export const GET_ALL_ORGANIZATIONS_WITH_MEMBERS = gql`
+  query GetAllOrganizationsWithMembers($membersWhere: OrgMembershipWhereInput) {
+    organizations {
+      edges {
+        node {
+          id
+          personalOrg
+          displayName
+          name
+          avatarRemoteURL
+          avatarFile {
+            id
+            presignedURL
+          }
+          members(where: $membersWhere) {
+            edges {
+              node {
+                id
+                role
+                user {
+                  id
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`
+```
+
+**Usage:**
+
+```typescript
+const { data } = useGetAllOrganizationsWithMembers({
+  userId: currentUserId
+})
+```
+
+### Specific Field Query
+
+Fetch only specific fields for performance:
+
+```typescript packages/codegen/query/organization.ts
+export const GET_ORGANIZATION_NAME_BY_ID = gql`
+  query GetOrganizationNameByID($organizationId: ID!) {
+    organization(id: $organizationId) {
+      name
+      displayName
+    }
+  }
+`
+```
+
+## Using Queries in Components
+
+Here's a real example from the codebase:
+
+```typescript apps/console/src/components/pages/protected/profile/user-settings/profile-name-form.tsx
+import { useGetCurrentUser, useUpdateUser } from '@/lib/graphql-hooks/user'
+import { useSession } from 'next-auth/react'
+
+const ProfileNameForm = () => {
+  const { data: sessionData } = useSession()
+  const userId = sessionData?.user.userId
+
+  // Query user data
+  const { data: userData } = useGetCurrentUser(userId)
+
+  // Access the data
+  const firstName = userData?.user.firstName || ''
+  const lastName = userData?.user.lastName || ''
+  const displayName = userData?.user.displayName || ''
+  const email = userData?.user.email || ''
+
+  return (
+    <form>
+      <input value={firstName} />
+      <input value={lastName} />
+      <input value={displayName} />
+      <input value={email} />
+    </form>
+  )
+}
+```
+
+## Query Hook Options
+
+Generated query hooks support React Query options:
+
+```typescript
+const { data, isLoading, error, refetch } = useGetCurrentUser(userId, {
+  enabled: !!userId,        // Only run when userId exists
+  refetchOnMount: true,     // Refetch on component mount
+  refetchOnWindowFocus: false,  // Don't refetch on window focus
+  staleTime: 5000,          // Data is fresh for 5 seconds
+})
+```
+
+### Common Options
+
+| Option | Description |
+|--------|-------------|
+| `enabled` | Whether the query should run |
+| `refetchOnMount` | Refetch when component mounts |
+| `refetchOnWindowFocus` | Refetch when window regains focus |
+| `staleTime` | How long data stays fresh (ms) |
+| `cacheTime` | How long to keep unused data (ms) |
+| `retry` | Number of retry attempts on failure |
+
+## Conditional Queries
+
+Only fetch data when conditions are met:
+
+```typescript
+const { data: orgData } = useGetOrganizationNameById(
+  organizationId,
+  {
+    enabled: !!organizationId  // Only fetch if ID exists
+  }
+)
+```
+
+## Query States
+
+Handle different query states:
+
+```typescript
+const { data, isLoading, isError, error } = useGetCurrentUser(userId)
+
+if (isLoading) {
+  return <Spinner />
+}
+
+if (isError) {
+  return <ErrorMessage error={error} />
+}
+
+if (!data?.user) {
+  return <NotFound />
+}
+
+return <UserProfile user={data.user} />
+```
+
+## Cache Management
+
+Queries are automatically cached by React Query using query keys:
+
+```typescript
+// Query key: ['user', userId]
+const { data } = useGetCurrentUser(userId)
+
+// Query key: ['organizations']
+const { data } = useGetAllOrganizations()
+
+// Query key: ['invites', where, orderBy, page, pageSize]
+const { data } = useGetInvites({ where, orderBy, pagination })
+```
+
+### Manual Refetch
+
+```typescript
+const { data, refetch } = useGetCurrentUser(userId)
+
+// Manually refetch
+await refetch()
+```
+
+### Invalidate Cache
+
+```typescript
+import { useQueryClient } from '@tanstack/react-query'
+
+const queryClient = useQueryClient()
+
+// Invalidate all user queries
+queryClient.invalidateQueries({ queryKey: ['user'] })
+
+// Invalidate specific user query
+queryClient.invalidateQueries({ queryKey: ['user', userId] })
+```
+
+## Best Practices
+
+<Card title="Request Only Needed Fields" icon="filter">
+Only query the fields you need to reduce payload size and improve performance.
+</Card>
+
+<Card title="Use Fragments for Reuse" icon="puzzle">
+Define GraphQL fragments for commonly requested field sets.
+</Card>
+
+<Card title="Enable Conditionally" icon="toggle-on">
+Use the `enabled` option to prevent queries from running until dependencies are ready.
+</Card>
+
+<Card title="Handle Loading States" icon="spinner">
+Always handle loading, error, and empty states in your components.
+</Card>
+
+<Card title="Leverage Caching" icon="database">
+Use React Query's caching to avoid unnecessary network requests.
+</Card>

@@ -1,0 +1,361 @@
+---
+title: 'Installation'
+description: 'Install and configure the @repo/ui component library in your application'
+icon: 'download'
+---
+
+## Prerequisites
+
+Before installing the component library, ensure you have:
+
+- **Node.js**: Version 18 or higher
+- **React**: Version 19.2.4 or compatible
+- **Package Manager**: npm, yarn, or pnpm
+
+## Installation
+
+<Note>
+  The `@repo/ui` package is an internal monorepo package. If you're working within the Openlane monorepo, it's already available as a workspace dependency.
+</Note>
+
+### Within the Monorepo
+
+If you're creating a new app or package within the monorepo:
+
+<Steps>
+  <Step title="Add the dependency">
+    Add `@repo/ui` to your `package.json`:
+    
+    ```json package.json
+    {
+      "dependencies": {
+        "@repo/ui": "workspace:*",
+        "react": "19.2.4",
+        "react-dom": "19.2.4"
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Install dependencies">
+    Run the package manager install command from the monorepo root:
+    
+    <CodeGroup>
+      ```bash npm
+      npm install
+      ```
+      
+      ```bash pnpm
+      pnpm install
+      ```
+      
+      ```bash yarn
+      yarn install
+      ```
+    </CodeGroup>
+  </Step>
+  
+  <Step title="Import the styles">
+    Import the global styles in your app's entry point:
+    
+    ```tsx app/layout.tsx
+    import '@repo/ui/styles.css'
+    
+    export default function RootLayout({ children }) {
+      return (
+        <html lang="en">
+          <body>{children}</body>
+        </html>
+      )
+    }
+    ```
+  </Step>
+</Steps>
+
+## Configuration
+
+### Tailwind CSS Setup
+
+The component library uses Tailwind CSS v4. Configure your application to work with the UI package:
+
+<Steps>
+  <Step title="Install Tailwind CSS v4">
+    ```bash
+    npm install tailwindcss@^4.1.13 @tailwindcss/postcss@^4.1.13
+    ```
+  </Step>
+  
+  <Step title="Configure PostCSS">
+    Create or update `postcss.config.mjs`:
+    
+    ```js postcss.config.mjs
+    export default {
+      plugins: {
+        '@tailwindcss/postcss': {},
+      },
+    }
+    ```
+  </Step>
+  
+  <Step title="Import UI package PostCSS config (Optional)">
+    If you need the exact PostCSS configuration:
+    
+    ```js postcss.config.mjs
+    import uiPostcssConfig from '@repo/ui/postcss.config'
+    
+    export default uiPostcssConfig
+    ```
+  </Step>
+</Steps>
+
+### TypeScript Configuration
+
+Ensure your `tsconfig.json` is properly configured:
+
+```json tsconfig.json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "paths": {
+      "@repo/ui/*": ["../../packages/ui/src/*"]
+    }
+  }
+}
+```
+
+## Peer Dependencies
+
+The component library requires React as a peer dependency. Most additional dependencies are bundled, but you may need to install:
+
+<CodeGroup>
+  ```bash Required
+  npm install react@19.2.4 react-dom@19.2.4
+  ```
+  
+  ```bash Form Support
+  npm install react-hook-form zod @hookform/resolvers
+  ```
+  
+  ```bash Icons
+  npm install lucide-react @radix-ui/react-icons
+  ```
+</CodeGroup>
+
+## Importing Components
+
+The library uses individual exports for tree-shaking optimization:
+
+### Individual Imports (Recommended)
+
+```tsx
+import { Button } from '@repo/ui/button'
+import { Input } from '@repo/ui/input'
+import { Alert } from '@repo/ui/alert'
+```
+
+### Utility Imports
+
+```tsx
+import { cn } from '@repo/ui/lib/utils'
+import { useToast } from '@repo/ui/use-toast'
+```
+
+### Style Imports
+
+```tsx
+import '@repo/ui/styles.css'
+```
+
+## Available Exports
+
+Here are all available component exports:
+
+<Tabs>
+  <Tab title="Components">
+    ```tsx
+    // Form Components
+    import { Input } from '@repo/ui/input'
+    import { Textarea } from '@repo/ui/textarea'
+    import { Select } from '@repo/ui/select'
+    import { Checkbox } from '@repo/ui/checkbox'
+    import { RadioGroup } from '@repo/ui/radio-group'
+    import { Switch } from '@repo/ui/switch'
+    import { Form } from '@repo/ui/form'
+    import { PasswordInput } from '@repo/ui/password-input'
+    import { TagInput } from '@repo/ui/tag-input'
+    import { InputOTP } from '@repo/ui/input-otp'
+    import { MultipleSelector } from '@repo/ui/multiple-selector'
+    import { CountryDropdown } from '@repo/ui/country-dropdown'
+    
+    // Action Components
+    import { Button } from '@repo/ui/button'
+    import { AlertDialog } from '@repo/ui/alert-dialog'
+    import { ConfirmationDialog } from '@repo/ui/confirmation-dialog'
+    import { Dialog } from '@repo/ui/dialog'
+    import { Sheet } from '@repo/ui/sheet'
+    import { DropdownMenu } from '@repo/ui/dropdown-menu'
+    import { Command } from '@repo/ui/command'
+    
+    // Data Display
+    import { Table } from '@repo/ui/table'
+    import { DataTable } from '@repo/ui/data-table'
+    import { Badge } from '@repo/ui/badge'
+    import { Avatar } from '@repo/ui/avatar'
+    import { Panel } from '@repo/ui/panel'
+    import { Tag } from '@repo/ui/tag'
+    import { Pagination } from '@repo/ui/pagination'
+    import { ProgressCircle } from '@repo/ui/progress-circle'
+    
+    // Navigation
+    import { Breadcrumb } from '@repo/ui/breadcrumb'
+    import { Tabs } from '@repo/ui/tabs'
+    import { Separator } from '@repo/ui/separator'
+    import { PageHeading } from '@repo/ui/page-heading'
+    
+    // Feedback
+    import { Alert } from '@repo/ui/alert'
+    import { Toast, Toaster } from '@repo/ui/toast'
+    import { Tooltip } from '@repo/ui/tooltip'
+    import { SystemTooltip } from '@repo/ui/system-tooltip'
+    import { Info } from '@repo/ui/info'
+    import { MessageBox } from '@repo/ui/message-box'
+    
+    // Data Entry
+    import { Calendar } from '@repo/ui/calendar'
+    import { CalendarPopover } from '@repo/ui/calendar-popover'
+    import { Slider } from '@repo/ui/slider'
+    
+    // Layout
+    import { Grid } from '@repo/ui/grid'
+    import { Popover } from '@repo/ui/popover'
+    
+    // Charts
+    import { LineChart } from '@repo/ui/line-chart'
+    import { DonutChart } from '@repo/ui/donut-chart'
+    ```
+  </Tab>
+  
+  <Tab title="Utilities">
+    ```tsx
+    // Utilities
+    import { cn } from '@repo/ui/lib/utils'
+    import { useToast } from '@repo/ui/use-toast'
+    import { chartUtils } from '@repo/ui/lib/chartUtils'
+    import { windowResize } from '@repo/ui/lib/windowResize'
+    
+    // Icons
+    import { GoogleIcon } from '@repo/ui/icons/google'
+    import { GithubIcon } from '@repo/ui/icons/github'
+    import { ChevronDown } from '@repo/ui/icons/chevron-down'
+    ```
+  </Tab>
+  
+  <Tab title="Types">
+    ```tsx
+    // Types
+    import type { PaginationTypes } from '@repo/ui/pagination-types'
+    import type { TableKey } from '@repo/ui/table-key'
+    ```
+  </Tab>
+</Tabs>
+
+## Verifying Installation
+
+Create a simple test component to verify everything is working:
+
+```tsx app/test.tsx
+import { Button } from '@repo/ui/button'
+import { Input } from '@repo/ui/input'
+import { Alert, AlertTitle, AlertDescription } from '@repo/ui/alert'
+
+export default function TestPage() {
+  return (
+    <div className="p-8 space-y-4">
+      <Alert>
+        <AlertTitle>Installation Successful!</AlertTitle>
+        <AlertDescription>
+          The @repo/ui component library is working correctly.
+        </AlertDescription>
+      </Alert>
+      
+      <div className="space-y-2">
+        <Input placeholder="Enter text..." />
+        <Button variant="primary">Click me</Button>
+      </div>
+    </div>
+  )
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Module not found errors">
+    Ensure you've installed all dependencies and the workspace link is correct:
+    
+    ```bash
+    # From monorepo root
+    pnpm install
+    
+    # Clear cache if needed
+    rm -rf node_modules
+    pnpm install
+    ```
+  </Accordion>
+  
+  <Accordion title="Styles not loading">
+    Make sure you've imported the styles CSS:
+    
+    ```tsx
+    import '@repo/ui/styles.css'
+    ```
+    
+    Check that PostCSS is configured correctly with Tailwind v4.
+  </Accordion>
+  
+  <Accordion title="TypeScript errors">
+    Verify your `tsconfig.json` includes proper path mappings and the React types:
+    
+    ```json
+    {
+      "compilerOptions": {
+        "types": ["node", "react", "react-dom"]
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Dark mode not working">
+    Ensure the `dark` class is applied to a parent element:
+    
+    ```tsx
+    <html className={isDark ? 'dark' : ''}>
+      <body>{children}</body>
+    </html>
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Usage Guide" icon="code" href="/components/usage">
+    Learn how to use components in your application
+  </Card>
+  
+  <Card title="Theming" icon="palette" href="/components/theming">
+    Customize the component library theme
+  </Card>
+  
+  <Card title="Component Overview" icon="box" href="/components/overview">
+    Explore all available components
+  </Card>
+  
+  <Card title="Storybook" icon="book" href="/components/storybook">
+    Browse interactive component examples
+  </Card>
+</CardGroup>

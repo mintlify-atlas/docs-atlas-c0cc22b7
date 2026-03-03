@@ -1,0 +1,256 @@
+---
+title: 'Component Library Overview'
+description: 'A comprehensive React component library built with Radix UI primitives and styled with Tailwind CSS v4'
+icon: 'box'
+---
+
+## Introduction
+
+The `@repo/ui` package is Openlane's internal component library that provides a collection of reusable React components built on top of [Radix UI](https://www.radix-ui.com/) primitives and styled with [Tailwind CSS v4](https://tailwindcss.com/). The library follows modern design patterns and includes both basic UI elements and complex composite components.
+
+## Architecture
+
+The component library is structured as a monorepo package with the following characteristics:
+
+- **Framework Agnostic**: Built with React 19.2.4 and can be used in any React application
+- **TypeScript First**: Full TypeScript support with comprehensive type definitions
+- **Modular Exports**: Each component is exported individually to enable tree-shaking
+- **Design System**: Consistent theming with CSS variables and Tailwind v4
+- **Accessibility**: Built on Radix UI primitives for WAI-ARIA compliance
+
+## Component Categories
+
+The library includes over 50 components organized into the following categories:
+
+<CardGroup cols={2}>
+  <Card title="Form Components" icon="input-text">
+    Input, Textarea, Select, Checkbox, Radio Group, Switch, Form, Password Input, Tag Input, Input OTP, Multiple Selector
+  </Card>
+  
+  <Card title="Action Components" icon="hand-pointer">
+    Button, Alert Dialog, Confirmation Dialog, Dialog, Sheet, Dropdown Menu, Command
+  </Card>
+  
+  <Card title="Data Display" icon="table">
+    Table, Data Table, Badge, Avatar, Card Panel, Panel, Tag, Pagination, Progress Circle
+  </Card>
+  
+  <Card title="Navigation" icon="compass">
+    Breadcrumb, Tabs, Separator, Page Heading
+  </Card>
+  
+  <Card title="Feedback" icon="bell">
+    Alert, Toast, Toaster, Tooltip, System Tooltip, Info, Message Box
+  </Card>
+  
+  <Card title="Data Entry" icon="calendar">
+    Calendar, Calendar Popover, Date Picker, Slider
+  </Card>
+  
+  <Card title="Layout" icon="layout">
+    Grid, Panel, Card Panel, Popover
+  </Card>
+  
+  <Card title="Rich Content" icon="text">
+    Plate UI (Rich text editor components), Chart, Line Chart, Donut Chart
+  </Card>
+</CardGroup>
+
+## Key Features
+
+### Variant-Based Styling
+
+Components use [class-variance-authority](https://cva.style/docs) (CVA) for type-safe variant styling:
+
+```tsx
+import { Button } from '@repo/ui/button'
+
+export function Example() {
+  return (
+    <>
+      <Button variant="primary">Primary</Button>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="destructive">Delete</Button>
+    </>
+  )
+}
+```
+
+### Composition Pattern
+
+Many components follow a composition pattern for flexibility:
+
+```tsx
+import { Alert, AlertTitle, AlertDescription } from '@repo/ui/alert'
+
+export function Example() {
+  return (
+    <Alert>
+      <AlertTitle>Heads up!</AlertTitle>
+      <AlertDescription>
+        You can add components to your app using the CLI.
+      </AlertDescription>
+    </Alert>
+  )
+}
+```
+
+### Form Integration
+
+Seamless integration with [React Hook Form](https://react-hook-form.com/):
+
+```tsx
+import { Form, FormField, FormItem, FormLabel, FormControl } from '@repo/ui/form'
+import { Input } from '@repo/ui/input'
+import { useForm } from 'react-hook-form'
+
+export function Example() {
+  const form = useForm()
+  
+  return (
+    <Form {...form}>
+      <FormField
+        control={form.control}
+        name="email"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Email</FormLabel>
+            <FormControl>
+              <Input placeholder="email@example.com" {...field} />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+    </Form>
+  )
+}
+```
+
+### Dark Mode Support
+
+All components support dark mode out of the box using CSS variables:
+
+```tsx
+// Dark mode is automatically applied when the 'dark' class is present
+<div className="dark">
+  <Button variant="primary">Dark Mode Button</Button>
+</div>
+```
+
+## Utility Functions
+
+The library includes helper utilities:
+
+### cn() - Class Name Merger
+
+Combines `clsx` and `tailwind-merge` for intelligent class merging:
+
+```tsx
+import { cn } from '@repo/ui/lib/utils'
+
+const className = cn(
+  'text-base',
+  'text-lg', // This will override text-base
+  condition && 'font-bold'
+)
+```
+
+## Design Tokens
+
+The component library uses a comprehensive set of design tokens defined in CSS variables:
+
+- **Colors**: Primary, secondary, accent, destructive, muted, etc.
+- **Spacing**: Consistent padding and margin scales
+- **Typography**: Font families, sizes, and weights
+- **Borders**: Border radius and border colors
+- **Shadows**: Elevation system for depth
+
+## Dependencies
+
+The library leverages industry-standard dependencies:
+
+<AccordionGroup>
+  <Accordion title="Core Dependencies">
+    - **React 19.2.4**: Latest React with concurrent features
+    - **Radix UI**: Unstyled, accessible components
+    - **Tailwind CSS 4.1.13**: Utility-first CSS framework
+    - **class-variance-authority**: Type-safe component variants
+    - **lucide-react**: Beautiful, consistent icons
+  </Accordion>
+  
+  <Accordion title="Form & Validation">
+    - **react-hook-form**: Performant form library
+    - **@hookform/resolvers**: Schema validation resolvers
+    - **zod**: TypeScript-first schema validation
+  </Accordion>
+  
+  <Accordion title="Rich Content">
+    - **platejs**: Plate rich text editor
+    - **@platejs/\***: Plate plugins for tables, markdown, AI, etc.
+    - **recharts**: Composable charting library
+  </Accordion>
+  
+  <Accordion title="Advanced Features">
+    - **@tanstack/react-table**: Headless table library
+    - **date-fns**: Modern date utility library
+    - **sonner**: Toast notifications
+    - **cmdk**: Command palette component
+  </Accordion>
+</AccordionGroup>
+
+## Package Structure
+
+The package follows a modular structure:
+
+```
+packages/ui/
+├── src/
+│   ├── alert/          # Alert components
+│   ├── button/         # Button component
+│   ├── form/           # Form components
+│   ├── input/          # Input component
+│   ├── icons/          # Custom icon components
+│   ├── plate-ui/       # Rich text editor UI
+│   └── styles.css      # Global styles and tokens
+├── lib/
+│   ├── utils.ts        # Utility functions
+│   ├── chartUtils.tsx  # Chart helpers
+│   └── windowResize.tsx # Responsive utilities
+├── package.json        # Package configuration
+└── postcss.config.mjs  # PostCSS configuration
+```
+
+## Export Structure
+
+Components are exported individually for optimal tree-shaking:
+
+```json
+{
+  "exports": {
+    "./styles.css": "./src/styles.css",
+    "./button": "./src/button/button.tsx",
+    "./input": "./src/input/input.tsx",
+    "./lib/utils": "./lib/utils.ts"
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/components/installation">
+    Learn how to install and configure the component library
+  </Card>
+  
+  <Card title="Usage Guide" icon="code" href="/components/usage">
+    Explore basic usage patterns and examples
+  </Card>
+  
+  <Card title="Theming" icon="palette" href="/components/theming">
+    Customize components with Tailwind CSS v4
+  </Card>
+  
+  <Card title="Storybook" icon="book" href="/components/storybook">
+    Browse components in Storybook
+  </Card>
+</CardGroup>

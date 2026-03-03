@@ -1,0 +1,121 @@
+---
+title: GraphQL Integration
+description: Overview of GraphQL integration in Openlane UI
+---
+
+The Openlane UI uses GraphQL to communicate with the [Openlane Core API](https://api.theopenlane.io/query). The application leverages automated code generation to create TypeScript types and React hooks from GraphQL queries and mutations.
+
+## Architecture
+
+The GraphQL integration consists of several key components:
+
+### 1. Query Definitions
+
+GraphQL queries and mutations are defined in TypeScript files using the `gql` template tag from `graphql-request`:
+
+```typescript
+import { gql } from 'graphql-request'
+
+export const GET_USER_PROFILE = gql`
+  query GetUserProfile($userId: ID!) {
+    user(id: $userId) {
+      id
+      firstName
+      lastName
+      displayName
+      email
+      avatarRemoteURL
+      avatarFile {
+        presignedURL
+      }
+      setting {
+        id
+        status
+        tags
+        isTfaEnabled
+        isWebauthnAllowed
+        defaultOrg {
+          id
+          displayName
+        }
+      }
+    }
+  }
+`
+```
+
+Location: `/packages/codegen/query/*.ts`
+
+### 2. Code Generation
+
+The [@graphql-codegen](https://the-guild.dev/graphql/codegen) tool automatically generates:
+
+- **TypeScript types** from the GraphQL schema
+- **Operation types** for queries and mutations
+- **React Query hooks** for data fetching
+
+Configuration: `/packages/codegen/graphql-codegen.yml`
+
+### 3. Generated Hooks
+
+Custom React hooks are automatically generated that wrap the codegen output with application-specific logic:
+
+```typescript
+export const useGetCurrentUser = (userId?: string | null) => {
+  const { client } = useGraphQLClient()
+
+  return useQuery<GetUserProfileQuery, GetUserProfileQueryVariables>({
+    queryKey: ['user', userId],
+    queryFn: async () => client.request(GET_USER_PROFILE, { userId }),
+    enabled: !!userId,
+  })
+}
+```
+
+Location: `/apps/console/src/lib/graphql-hooks/*.ts`
+
+### 4. Component Usage
+
+Components import and use the generated hooks:
+
+```typescript
+import { useGetCurrentUser, useUpdateUser } from '@/lib/graphql-hooks/user'
+
+const ProfileForm = () => {
+  const { data: sessionData } = useSession()
+  const userId = sessionData?.user.userId
+  
+  const { data: userData } = useGetCurrentUser(userId)
+  const { isPending, mutateAsync: updateUser } = useUpdateUser()
+
+  // Use userData in your component
+}
+```
+
+## GraphQL Client
+
+The application uses `graphql-request` as the lightweight GraphQL client, integrated with TanStack Query (React Query) for caching and state management.
+
+### Key Features
+
+- **Type Safety**: Full TypeScript support with generated types
+- **Automatic Caching**: React Query manages query caching and invalidation
+- **Optimistic Updates**: Support for optimistic UI updates
+- **File Uploads**: Custom `fetchGraphQLWithUpload` for multipart requests
+- **Error Handling**: Structured error messages from the API
+
+## Schema Source
+
+The GraphQL schema is fetched from the Openlane Core repository:
+
+```yaml
+schema: https://raw.githubusercontent.com/theopenlane/core/main/internal/graphapi/clientschema/schema.graphql
+```
+
+This ensures the UI stays in sync with the latest API schema.
+
+## Related Documentation
+
+- [Code Generation Setup](/api/graphql-codegen)
+- [Query Patterns](/api/graphql-queries)
+- [Mutation Patterns](/api/graphql-mutations)

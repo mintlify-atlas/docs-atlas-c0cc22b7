@@ -1,0 +1,339 @@
+---
+title: Contributing
+description: Guidelines for contributing to Openlane UI
+---
+
+Thank you for your interest in contributing to Openlane UI! This guide will help you get started with contributing to the project.
+
+## Before You Start
+
+Please read the following important documents:
+
+- [Developer Certificate of Origin](https://developercertificate.org/)
+- [Code of Conduct](https://github.com/theopenlane/.github/blob/main/CODE_OF_CONDUCT.md)
+
+<Note>
+  You will be required to sign all commits to the Openlane project. See [GitHub's documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification) for setup instructions.
+</Note>
+
+## Getting Started
+
+<Steps>
+  <Step title="Fork the Repository">
+    External contributors need to fork the repository since they don't have write access to the main branch.
+    
+    See [GitHub's guide on creating a PR from a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
+  </Step>
+
+  <Step title="Set Up Your Environment">
+    Follow the [development setup guide](/development/setup) to configure your local environment:
+    
+    ```bash
+    task local-setup
+    ```
+  </Step>
+
+  <Step title="Create a Branch">
+    Create a descriptive branch name for your changes:
+    
+    ```bash
+    git checkout -b feature/your-feature-name
+    # or
+    git checkout -b fix/issue-description
+    ```
+  </Step>
+
+  <Step title="Make Your Changes">
+    Write your code, following the project's coding standards and conventions.
+  </Step>
+</Steps>
+
+## Development Workflow
+
+### Code Quality
+
+The project uses several tools to maintain code quality:
+
+<CodeGroup>
+
+```bash Type Checking
+bun run type-check
+```
+
+```bash Linting
+task lint
+```
+
+```bash Formatting
+bun run format
+```
+
+```bash All Pre-commit Checks
+task precommit-full
+```
+
+</CodeGroup>
+
+### Pre-commit Hooks
+
+The project uses pre-commit hooks to enforce code quality. They run automatically on `git commit`:
+
+```bash
+# Install hooks
+pre-commit install && pre-commit install-hooks
+
+# Update hooks
+pre-commit autoupdate
+
+# Run manually on all files
+pre-commit run --show-diff-on-failure --color=always --all-files
+```
+
+### Testing Your Changes
+
+<Steps>
+  <Step title="Run Locally">
+    Test your changes in development mode:
+    
+    ```bash
+    task dev
+    ```
+  </Step>
+
+  <Step title="Run Tests">
+    Execute the test suite:
+    
+    ```bash
+    task test
+    ```
+  </Step>
+
+  <Step title="Build">
+    Ensure the production build works:
+    
+    ```bash
+    task build
+    ```
+  </Step>
+</Steps>
+
+## Commit Guidelines
+
+### Signing Commits
+
+All commits must be signed. Configure GPG signing:
+
+```bash
+# Set up GPG key
+gpg --full-generate-key
+
+# List keys and copy your key ID
+gpg --list-secret-keys --keyid-format=long
+
+# Configure Git to use your key
+git config --global user.signingkey YOUR_KEY_ID
+git config --global commit.gpgsign true
+```
+
+See [GitHub's commit signature verification guide](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification) for detailed instructions.
+
+### Commit Message Format
+
+Write clear, descriptive commit messages:
+
+```bash
+# Good commit messages
+git commit -m "feat: add user authentication flow"
+git commit -m "fix: resolve navigation menu overflow issue"
+git commit -m "docs: update API documentation"
+
+# Less helpful messages (avoid these)
+git commit -m "update code"
+git commit -m "fix bug"
+```
+
+## Pull Request Process
+
+<Steps>
+  <Step title="Push Your Changes">
+    Push your branch to your fork:
+    
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+  </Step>
+
+  <Step title="Create Pull Request">
+    Open a pull request from your fork to the main repository.
+    
+    Include in your PR description:
+    - What changes you made
+    - Why you made them
+    - Any related issues (use "Fixes #123" to auto-close issues)
+    - Screenshots (for UI changes)
+  </Step>
+
+  <Step title="Code Review">
+    Maintainers will review your PR and may request changes.
+    
+    Address feedback by:
+    - Making additional commits to your branch
+    - Pushing updates to the same branch
+    - Responding to review comments
+  </Step>
+
+  <Step title="Merge">
+    Once approved, a maintainer will merge your PR.
+  </Step>
+</Steps>
+
+## Coding Standards
+
+### TypeScript
+
+- Use TypeScript for all new code
+- Avoid `any` types - use proper typing
+- Export types that may be reused
+- Document complex types with comments
+
+### React
+
+- Use functional components with hooks
+- Follow React 19 best practices
+- Keep components focused and single-purpose
+- Use meaningful component and prop names
+
+### Styling
+
+- Use Tailwind CSS utility classes
+- Follow the shared Tailwind config from `@repo/tailwind-config`
+- Keep styles consistent with existing components
+- Use CSS variables for theming when appropriate
+
+### File Organization
+
+- Group related files together
+- Use index files for clean exports
+- Keep components in their own directories
+- Place tests alongside the code they test
+
+## Monorepo Structure
+
+Understand where to make changes:
+
+### Applications (`apps/`)
+
+- **console** - Main user-facing application
+- **storybook** - Component documentation and testing
+
+### Packages (`packages/`)
+
+- **codegen** - GraphQL code generation
+- **ui** - Shared UI components
+- **dally** - Common DAL patterns
+- **eslint-config** - Linting rules
+- **config-typescript** - TypeScript configuration
+- **tailwind-config** - Tailwind CSS configuration
+
+## Licensing
+
+By contributing to Openlane UI, you agree that your contributions will be licensed under the [Apache 2.0 License](https://github.com/theopenlane/openlane-ui/blob/main/LICENSE).
+
+### Important Notes
+
+- The repository is open source under Apache 2.0
+- Openlane's SaaS/Cloud Services are commercial products
+- Logos and trademarks are not covered under Apache 2.0
+- Others can distribute this software but cannot use Openlane trademarks
+
+## Security
+
+We take security seriously. If you discover a security vulnerability:
+
+<Note>
+  **DO NOT** report security vulnerabilities through public GitHub issues, discussions, or pull requests!
+</Note>
+
+Instead:
+
+1. Email `security@theopenlane.io` with details
+2. Include as much information as possible:
+   - Description of the vulnerability
+   - Steps to reproduce
+   - Potential impact
+   - Suggested fixes (if any)
+3. Wait for a response before disclosing publicly
+
+See the [security policy](https://github.com/theopenlane/openlane-ui/security/policy) for more details.
+
+## Getting Help
+
+If you have questions or need assistance:
+
+### Communication Channels
+
+- **Email**: `info@theopenlane.io`
+- **GitHub Issues**: [Create an issue](https://github.com/theopenlane/openlane-ui/issues/new)
+- **Direct Contact**: Reach out to [@matoszz](https://github.com/matoszz)
+
+### Before Asking
+
+1. Check existing [issues](https://github.com/theopenlane/openlane-ui/issues)
+2. Review the [documentation](https://github.com/theopenlane/openlane-ui)
+3. Search [discussions](https://github.com/theopenlane/openlane-ui/discussions)
+
+## Common Tasks
+
+### Updating Dependencies
+
+```bash
+# Update all dependencies
+bun update
+
+# Reinstall everything
+task reinstall
+```
+
+### Generating GraphQL Code
+
+See the [@repo/codegen README](https://github.com/theopenlane/openlane-ui/tree/main/packages/codegen) for details on regenerating GraphQL types and hooks.
+
+### Updating Passkey AAGUIDs
+
+```bash
+task update:passkeys
+```
+
+### Generating Route Lists
+
+```bash
+# Generate static route list
+task generate:routes
+
+# Update existing routes
+task update:routes
+```
+
+## Review Checklist
+
+Before submitting your PR, ensure:
+
+- [ ] Code follows project style guidelines
+- [ ] All tests pass (`task test`)
+- [ ] Type checking passes (`bun run type-check`)
+- [ ] Linting passes (`task lint`)
+- [ ] Code is formatted (`bun run format`)
+- [ ] Commits are signed
+- [ ] PR description is clear and complete
+- [ ] Documentation is updated (if needed)
+- [ ] No sensitive information in commits
+
+## Recognition
+
+All contributors will be recognized in:
+
+- Project contributors list
+- Release notes (for significant contributions)
+- Community acknowledgments
+
+Thank you for contributing to Openlane UI!
